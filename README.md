@@ -14,12 +14,14 @@ uv run examples/explore.py
 EKSI_USERNAME=you@mail.com EKSI_PASSWORD=pass uv run examples/explore.py
 ```
 
+![](https://i.imgur.com/UYaGmRV.png)
+
 ## Install
 
 ```bash
-uv add eksiapi
-# or
-pip install eksiapi
+git clone https://github.com/agmmnn/eksiapi
+cd eksiapi
+uv sync
 ```
 
 ## Quick start
