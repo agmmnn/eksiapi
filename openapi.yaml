@@ -1,0 +1,582 @@
+openapi: 3.0.3
+info:
+  title: Ekşi Sözlük API
+  description: |
+    Unofficial API documentation for Ekşi Sözlük (eksisozluk.com), reverse-engineered
+    from the Android app v2.4.4.
+
+    ## Authentication
+
+    All authenticated requests require two headers:
+    - `Authorization: Bearer <access_token>`
+    - `Client-Secret: <uuid>`
+
+    Both are obtained via the login flow. See the `/token` endpoint.
+
+    ## Api-Secret
+
+    The `Api-Secret` field in auth requests is an RSA/ECB/PKCS1Padding encrypted token
+    containing a crafted plaintext. See [eksi_auth.py](./eksi_auth.py) for the full
+    generation algorithm.
+
+    ## Cloudflare
+
+    The API is behind Cloudflare. Python clients must use `curl_cffi` with
+    `impersonate="chrome110"` to mimic Chrome's TLS fingerprint.
+  version: "2.4.4"
+  contact:
+    name: eksiapi
+  license:
+    name: MIT
+
+servers:
+  - url: https://api.eksisozluk.com
+    description: Production API
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+    clientSecret:
+      type: apiKey
+      in: header
+      name: Client-Secret
+
+  headers:
+    UserAgent:
+      schema:
+        type: string
+        example: "eksisozluk-android/137"
+
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        Data:
+          description: Response payload (type varies per endpoint)
+        Success:
+          type: boolean
+        Message:
+          type: string
+          nullable: true
+        StatusCode:
+          type: integer
+
+    TokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+          example: bearer
+        expires_in:
+          type: integer
+        refresh_token:
+          type: string
+        userName:
+          type: string
+        ".issued":
+          type: string
+          format: date-time
+        ".expires":
+          type: string
+          format: date-time
+
+    AnonymousTokenBody:
+      type: object
+      required: [DeviceModel, Platform, Version, Build, Api-Secret, Client-Secret, ClientUniqueId]
+      properties:
+        DeviceModel:
+          type: string
+          example: "Google sdk_gphone_x86_64"
+        Platform:
+          type: string
+          example: "g"
+        Version:
+          type: string
+          example: "2.4.4"
+        Build:
+          type: integer
+          example: 137
+        Api-Secret:
+          type: string
+          description: RSA-encrypted token (see eksi_auth.py)
+        Client-Secret:
+          type: string
+          format: uuid
+        ClientUniqueId:
+          type: string
+          format: uuid
+
+    LoginBody:
+      allOf:
+        - $ref: '#/components/schemas/AnonymousTokenBody'
+        - type: object
+          required: [grant_type, username, password]
+          properties:
+            grant_type:
+              type: string
+              enum: [password]
+            username:
+              type: string
+            password:
+              type: string
+
+security:
+  - bearerAuth: []
+  - clientSecret: []
+
+paths:
+
+  # ── Authentication ──────────────────────────────────────────────────────────
+
+  /v2/clientsettings/time:
+    get:
+      tags: [Auth]
+      summary: Get server timestamp
+      description: Returns current server time in milliseconds. Required as input for Api-Secret generation.
+      security: []
+      responses:
+        '200':
+          description: Server timestamp
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      Data:
+                        type: integer
+                        example: 1774216389918
+
+  /v2/account/anonymoustoken:
+    post:
+      tags: [Auth]
+      summary: Get anonymous bearer token
+      description: |
+        First step of login flow. Obtain an anonymous Bearer token used as Authorization
+        header for the subsequent /token call.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AnonymousTokenBody'
+      responses:
+        '200':
+          description: Anonymous token
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      Data:
+                        type: object
+                        properties:
+                          AccessToken:
+                            type: string
+                          ExpiresIn:
+                            type: integer
+
+  /token:
+    post:
+      tags: [Auth]
+      summary: Login with credentials
+      description: |
+        Full login. Requires an anonymous Bearer token in the Authorization header
+        (obtained from /v2/account/anonymoustoken). Returns access_token and other
+        OAuth fields.
+      security:
+        - bearerAuth: []
+        - clientSecret: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginBody'
+      responses:
+        '200':
+          description: Access token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+
+  # ── User ────────────────────────────────────────────────────────────────────
+
+  /v2/user/me:
+    get:
+      tags: [User]
+      summary: Authenticated user profile
+      responses:
+        '200':
+          description: Current user's profile data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /v2/user/isdeveloper:
+    get:
+      tags: [User]
+      summary: Check if current user has developer status
+      responses:
+        '200':
+          description: Developer status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /v2/user/{nick}:
+    get:
+      tags: [User]
+      summary: Public profile for any user
+      parameters:
+        - name: nick
+          in: path
+          required: true
+          schema:
+            type: string
+          example: agmmnn
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /v2/user/{nick}/entries:
+    get:
+      tags: [User]
+      summary: Entries authored by a user
+      parameters:
+        - name: nick
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: p
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+      responses:
+        '200':
+          description: Paginated entries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /v2/user/{nick}/favorites:
+    get:
+      tags: [User]
+      summary: Entries favorited by a user
+      parameters:
+        - name: nick
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: p
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Paginated favorites
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  # ── Entries ─────────────────────────────────────────────────────────────────
+
+  /v2/entry/{id}:
+    get:
+      tags: [Entries]
+      summary: Single entry by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: Entry data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /v2/entry/entriesbytopic:
+    get:
+      tags: [Entries]
+      summary: Entries for a topic
+      parameters:
+        - name: title
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Topic slug or URL-encoded title
+          example: python
+        - name: p
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Paginated entries for topic
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /v2/entry/search:
+    get:
+      tags: [Entries]
+      summary: Search entries
+      parameters:
+        - name: searchTerm
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: p
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /v2/entry/agenda:
+    get:
+      tags: [Entries]
+      summary: Agenda entries
+      parameters:
+        - name: p
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Agenda entries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  # ── Index / Trending ────────────────────────────────────────────────────────
+
+  /v2/index/popular:
+    post:
+      tags: [Index]
+      summary: Popular topics
+      description: Returns popular topics, optionally filtered by channels.
+      parameters:
+        - name: p
+          in: query
+          schema:
+            type: integer
+            default: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                Filters:
+                  type: array
+                  items:
+                    type: string
+                  description: Channel filter IDs (empty array for all)
+                  example: []
+      responses:
+        '200':
+          description: Popular topics list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /v2/index/today:
+    get:
+      tags: [Index]
+      summary: Today's topics (gündem)
+      parameters:
+        - name: p
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Today's topic list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /v2/index/getfilterchannels:
+    get:
+      tags: [Index]
+      summary: Available filter channels for popular feed
+      responses:
+        '200':
+          description: Channel list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  # ── Topics / Search ─────────────────────────────────────────────────────────
+
+  /v2/topic/search:
+    get:
+      tags: [Topics]
+      summary: Search topics
+      parameters:
+        - name: searchTerm
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: p
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Topic search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /v2/topic/autocomplete:
+    get:
+      tags: [Topics]
+      summary: Topic autocomplete suggestions
+      parameters:
+        - name: searchTerm
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Autocomplete suggestions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /v2/topic/unreadtopiccount:
+    get:
+      tags: [Topics]
+      summary: Count of unread topics for authenticated user
+      responses:
+        '200':
+          description: Unread topic count
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  # ── Notifications ───────────────────────────────────────────────────────────
+
+  /v2/notification/notificationcount:
+    get:
+      tags: [Notifications]
+      summary: Notification count for authenticated user
+      responses:
+        '200':
+          description: Notification count
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /v2/notification/lastnotifications:
+    get:
+      tags: [Notifications]
+      summary: Recent notifications
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Notification list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  # ── Messages ────────────────────────────────────────────────────────────────
+
+  /v2/message/unreadthreadauthors:
+    get:
+      tags: [Messages]
+      summary: Authors with unread message threads
+      responses:
+        '200':
+          description: Unread thread authors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  # ── Channels ────────────────────────────────────────────────────────────────
+
+  /v2/channel/list:
+    get:
+      tags: [Channels]
+      summary: Available channels
+      responses:
+        '200':
+          description: Channel list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  # ── Billing ─────────────────────────────────────────────────────────────────
+
+  /v2/billing/subscription/status:
+    get:
+      tags: [Billing]
+      summary: Subscription status for authenticated user
+      responses:
+        '200':
+          description: Subscription status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'

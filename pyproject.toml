@@ -1,0 +1,21 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "eksiapi"
+version = "0.1.0"
+description = "Unofficial Python client for the Ekşi Sözlük API (reverse-engineered from Android app v2.4.4)"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+dependencies = [
+    "curl-cffi>=0.7",
+    "cryptography>=42",
+]
+
+[project.urls]
+Homepage = "https://github.com/YOUR_USERNAME/eksiapi"
+
+[tool.hatch.build.targets.wheel]
+packages = ["eksiapi"]

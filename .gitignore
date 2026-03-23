@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# uv / venv
+.venv/
+venv/
+.python-version
+
+# Build
+dist/
+build/
+*.egg-info/
+*.egg
+.eggs/
+
+# uv cache
+.uv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets — never commit credentials
+.env
+*.env
+secrets.py
