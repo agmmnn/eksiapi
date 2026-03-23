@@ -6,6 +6,14 @@ Unofficial Python client for [Ekşi Sözlük](https://eksisozluk.com), reverse-e
 - Bypasses Cloudflare via `curl_cffi` Chrome TLS impersonation
 - Typed, minimal, no magic
 
+## Install
+
+```bash
+git clone https://github.com/agmmnn/eksiapi
+cd eksiapi
+uv sync
+```
+
 ## Example
 
 ```bash
@@ -14,15 +22,7 @@ uv run examples/explore.py
 EKSI_USERNAME=you@mail.com EKSI_PASSWORD=pass uv run examples/explore.py
 ```
 
-![](https://i.imgur.com/UYaGmRV.png)
-
-## Install
-
-```bash
-git clone https://github.com/agmmnn/eksiapi
-cd eksiapi
-uv sync
-```
+<img alt="ekşi sözlük api" src="https://github.com/user-attachments/assets/04764ef4-41d0-4230-af2a-e01ca7f9be4b" />
 
 ## Quick start
 
