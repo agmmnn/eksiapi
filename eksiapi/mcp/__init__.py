@@ -1,5 +1,4 @@
-"""MCP integration for :mod:`eksiapi`."""
+"""Optional MCP integration for :mod:`eksiapi`.
 
-from .server import create_server
-
-__all__ = ["create_server"]
+Install ``eksiapi[mcp]`` before importing :mod:`eksiapi.mcp.server`.
+"""

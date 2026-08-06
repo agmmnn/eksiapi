@@ -9,7 +9,7 @@ See eksi_auth.py for Api-Secret generation details.
 from __future__ import annotations
 
 import uuid
-from typing import Any, Self
+from typing import Any
 from urllib.parse import quote
 
 from curl_cffi import requests  # browser TLS fingerprint to bypass Cloudflare
@@ -187,7 +187,7 @@ class EksiClient:
         if close is not None:
             close()
 
-    def __enter__(self) -> Self:
+    def __enter__(self) -> EksiClient:  # noqa: PYI034 - keep Python 3.10 support
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:

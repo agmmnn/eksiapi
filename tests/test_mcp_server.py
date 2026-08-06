@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import asyncio
+import time
 from typing import Any
 
+import pytest
 from mcp import Client
 
+from eksiapi.errors import EksiApiError
 from eksiapi.mcp.credentials import CredentialError
-from eksiapi.mcp.server import create_server
+from eksiapi.mcp.server import EksiService, _clean, _Throttle, create_server
 
 
 class FakeEksiClient:
@@ -99,3 +102,89 @@ def test_missing_credentials_become_a_safe_tool_error() -> None:
             assert "No credentials configured" in result.content[0].text
 
     asyncio.run(run())
+
+
+def test_all_read_tools_route_to_client() -> None:
+    fake = FakeEksiClient()
+    server = create_server(lambda: fake, min_interval=0)
+    calls = [
+        ("eksi_search_topics", {"query": "python", "page": 2}),
+        ("eksi_get_topic_entries", {"topic": "python", "page": 3}),
+        ("eksi_get_entry", {"entry_id": 42}),
+        ("eksi_get_user", {"nick": "alice/bob"}),
+        ("eksi_get_user_entries", {"nick": "alice", "page": 4}),
+        ("eksi_get_user_favorites", {"nick": "alice", "page": 5}),
+        ("eksi_get_feed", {"feed": "popular", "page": 6, "channel_filters": ["spor"]}),
+        ("eksi_get_feed", {"feed": "today", "page": 7}),
+        ("eksi_get_feed", {"feed": "agenda", "page": 8}),
+        ("eksi_get_notifications", {"page": 9}),
+        ("eksi_get_channels", {}),
+    ]
+
+    async def run() -> None:
+        async with Client(server) as client:
+            for name, arguments in calls:
+                result = await client.call_tool(name, arguments)
+                assert result.is_error is False
+
+    asyncio.run(run())
+    assert any(name == "popular" for name, _, _ in fake.calls)
+    server._eksi_service.close()
+    assert fake.closed is True
+
+
+def test_feed_validation_and_cleaning() -> None:
+    server = create_server(lambda: FakeEksiClient(), min_interval=0)
+
+    async def run() -> None:
+        async with Client(server) as client:
+            invalid_filter = await client.call_tool(
+                "eksi_get_feed", {"feed": "today", "channel_filters": ["spor"]}
+            )
+            too_many = await client.call_tool(
+                "eksi_get_feed",
+                {"feed": "popular", "channel_filters": ["x"] * 21},
+            )
+            empty = await client.call_tool("eksi_get_user", {"nick": "   "})
+            assert invalid_filter.is_error is True
+            assert too_many.is_error is True
+            assert empty.is_error is True
+
+    asyncio.run(run())
+    with pytest.raises(ValueError, match="cannot be empty"):
+        _clean(" ", "query")
+
+
+def test_service_masks_api_and_unexpected_errors() -> None:
+    class ErrorClient:
+        def api_error(self):
+            raise EksiApiError("safe")
+
+        def unexpected(self):
+            raise OSError("sensitive")
+
+        def close(self):
+            pass
+
+    service = EksiService(lambda: ErrorClient(), min_interval=0)
+    with pytest.raises(RuntimeError, match="safe"):
+        service.call("api_error")
+    with pytest.raises(RuntimeError, match="Unexpected error"):
+        service.call("unexpected")
+
+
+def test_throttle_configuration(monkeypatch) -> None:
+    with pytest.raises(ValueError, match="negative"):
+        _Throttle(-1)
+
+    monkeypatch.setenv("EKSI_MCP_MIN_INTERVAL", "bad")
+    with pytest.raises(ValueError, match="must be a number"):
+        create_server(lambda: FakeEksiClient())
+
+    monkeypatch.setenv("EKSI_MCP_MIN_INTERVAL", "-1")
+    with pytest.raises(ValueError, match="cannot be negative"):
+        create_server(lambda: FakeEksiClient())
+
+    throttle = _Throttle(0.001)
+    throttle._last_call = time.monotonic()
+    throttle.wait()

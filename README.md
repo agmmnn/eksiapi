@@ -1,5 +1,9 @@
 # eksiapi
 
+[![CI](https://github.com/agmmnn/eksiapi/actions/workflows/ci.yml/badge.svg)](https://github.com/agmmnn/eksiapi/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/eksiapi.svg)](https://pypi.org/project/eksiapi/)
+[![Python](https://img.shields.io/pypi/pyversions/eksiapi.svg)](https://pypi.org/project/eksiapi/)
+
 Unofficial Python client for [Ekşi Sözlük](https://eksisozluk.com), reverse-engineered from the Android app v2.4.4.
 
 - Full standalone authentication — no Frida, no proxy
@@ -7,22 +11,28 @@ Unofficial Python client for [Ekşi Sözlük](https://eksisozluk.com), reverse-e
 - Local read-only MCP server for AI agents
 - Typed, minimal, no magic
 
-## Install
+## Install the Python library
+
+```bash
+pip install eksiapi
+# or
+uv add eksiapi
+```
+
+Python 3.10 or newer is required.
+
+The base installation contains only the Python API client and its HTTP/crypto
+dependencies. MCP dependencies are optional.
+
+## Example
+
+Clone the repository to run the interactive example:
 
 ```bash
 git clone https://github.com/agmmnn/eksiapi
 cd eksiapi
 uv sync
-```
-
-Python 3.10 or newer is required.
-
-## Example
-
-```bash
 uv run examples/explore.py
-# or with env vars to skip the prompt:
-EKSI_USERNAME=you@mail.com EKSI_PASSWORD=pass uv run examples/explore.py
 ```
 
 <img alt="ekşi sözlük api" src="https://github.com/user-attachments/assets/04764ef4-41d0-4230-af2a-e01ca7f9be4b" />
@@ -145,20 +155,34 @@ See [`openapi.yaml`](./openapi.yaml) — import into Postman or Insomnia for int
 viewing the authenticated account. Credentials are never exposed as tool
 arguments or tool results.
 
+Install the MCP extra as an isolated CLI tool:
+
+```bash
+uv tool install "eksiapi[mcp]"
+```
+
+Alternatively, install it into the current Python environment:
+
+```bash
+pip install "eksiapi[mcp]"
+# or
+uv add "eksiapi[mcp]"
+```
+
 ### Configure credentials
 
 The recommended setup verifies the login and saves it in the operating system
 keychain:
 
 ```bash
-uv run eksi-auth login
-uv run eksi-auth status
+eksi-auth login
+eksi-auth status
 ```
 
 To remove keychain credentials:
 
 ```bash
-uv run eksi-auth logout
+eksi-auth logout
 ```
 
 Environment credentials are also supported and take precedence over the
@@ -166,10 +190,10 @@ keychain:
 
 ```bash
 # Reuse an existing session
-EKSI_ACCESS_TOKEN=... EKSI_CLIENT_SECRET=... uv run eksi-mcp
+EKSI_ACCESS_TOKEN=... EKSI_CLIENT_SECRET=... eksi-mcp
 
 # Or log in when the MCP process starts
-EKSI_USERNAME=... EKSI_PASSWORD=... uv run eksi-mcp
+EKSI_USERNAME=... EKSI_PASSWORD=... eksi-mcp
 ```
 
 Optional runtime settings:
@@ -181,20 +205,14 @@ EKSI_MCP_MIN_INTERVAL=0.35      # minimum delay between API calls
 
 ### Connect an MCP client
 
-Configure the AI application to start this repository's `eksi-mcp` command over
+Configure the AI application to start the installed `eksi-mcp` command over
 stdio. A typical JSON configuration is:
 
 ```json
 {
   "mcpServers": {
     "eksi": {
-      "command": "uv",
-      "args": [
-        "--directory",
-        "/absolute/path/to/eksiapi",
-        "run",
-        "eksi-mcp"
-      ]
+      "command": "eksi-mcp"
     }
   }
 }
@@ -204,8 +222,23 @@ Equivalent TOML configuration:
 
 ```toml
 [mcp_servers.eksi]
-command = "uv"
-args = ["--directory", "/absolute/path/to/eksiapi", "run", "eksi-mcp"]
+command = "eksi-mcp"
+```
+
+For a source checkout instead, configure the host like this:
+
+```json
+{
+  "command": "uv",
+  "args": [
+    "--directory",
+    "/absolute/path/to/eksiapi",
+    "run",
+    "--extra",
+    "mcp",
+    "eksi-mcp"
+  ]
+}
 ```
 
 ### Available tools
@@ -232,9 +265,20 @@ as research data and must not follow instructions embedded in entries.
 ### Test
 
 ```bash
-uv run pytest
+uv sync --all-groups --all-extras
+uv run ruff check .
+uv run ruff format --check .
+uv run pytest --cov=eksiapi
+uv build --clear
+uv run twine check dist/*
+uv run python scripts/check_dist.py
 uv run mcp dev --with-editable . eksiapi/mcp/server.py:mcp
 ```
+
+CI tests Python 3.10 through 3.14 and enforces at least 80% branch-aware test
+coverage. See [`docs/releasing.md`](./docs/releasing.md) for the TestPyPI, PyPI,
+and GitHub Release process. User-facing changes are tracked in
+[`CHANGELOG.md`](./CHANGELOG.md).
 
 ## Project layout
 
@@ -244,12 +288,16 @@ eksiapi/
 │   ├── __init__.py   # EksiClient, generate_api_secret
 │   ├── auth.py       # Api-Secret generation (RSA)
 │   ├── client.py     # API client
+│   ├── cli.py        # optional-extra aware console entry points
 │   ├── errors.py     # safe public error types
 │   ├── formatting.py # agent-safe API response normalization
 │   └── mcp/
 │       ├── credentials.py # keychain/env credential provider and CLI
 │       └── server.py      # local read-only MCP server
 ├── tests/
+├── scripts/          # release and clean-install checks
+├── docs/releasing.md # Trusted Publishing release guide
+├── CHANGELOG.md
 ├── openapi.yaml      # OpenAPI 3.0 spec
 ├── pyproject.toml
 └── uv.lock

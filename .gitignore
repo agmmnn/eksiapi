@@ -17,6 +17,11 @@ build/
 *.egg
 .eggs/
 
+# Test reports
+.coverage
+coverage.xml
+htmlcov/
+
 # uv cache
 .uv/
 
@@ -34,3 +39,5 @@ Thumbs.db
 .env
 *.env
 secrets.py
+
+other

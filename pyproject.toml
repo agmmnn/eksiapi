@@ -1,37 +1,79 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.31,<2"]
 build-backend = "hatchling.build"
 
 [project]
 name = "eksiapi"
 version = "0.1.0"
-description = "Unofficial Python client for the Ekşi Sözlük API (reverse-engineered from Android app v2.4.4)"
+description = "Unofficial Python client and MCP server for Ekşi Sözlük"
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
+keywords = ["eksi-sozluk", "api", "mcp", "model-context-protocol"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
 dependencies = [
-    "curl-cffi>=0.7",
-    "cryptography>=42",
-    "keyring>=25,<27",
-    "mcp>=2,<3",
-    "pydantic>=2.10,<3",
+    "curl-cffi>=0.16,<1",
+    "cryptography>=50,<51",
+]
+
+[project.optional-dependencies]
+mcp = [
+    "keyring>=25.7,<26",
+    "mcp>=2.0,<3",
+    "pydantic>=2.13,<3",
 ]
 
 [project.scripts]
-eksi-auth = "eksiapi.mcp.credentials:main"
-eksi-mcp = "eksiapi.mcp.server:main"
+eksi-auth = "eksiapi.cli:run_auth"
+eksi-mcp = "eksiapi.cli:run_mcp"
 
 [project.urls]
 Homepage = "https://github.com/agmmnn/eksiapi"
+Documentation = "https://github.com/agmmnn/eksiapi#readme"
+Issues = "https://github.com/agmmnn/eksiapi/issues"
+Source = "https://github.com/agmmnn/eksiapi"
 
 [dependency-groups]
 dev = [
-    "mcp[cli]>=2,<3",
-    "pytest>=8,<10",
+    "keyring>=25.7,<26",
+    "mcp[cli]>=2.0,<3",
+    "pydantic>=2.13,<3",
+    "pytest>=9.1,<10",
+    "pytest-cov>=7.1,<8",
+    "ruff>=0.16,<1",
+    "twine>=7,<8",
 ]
 
 [tool.hatch.build.targets.wheel]
 packages = ["eksiapi"]
 
 [tool.pytest.ini_options]
+addopts = ["--strict-config", "--strict-markers"]
 testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["eksiapi"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = true
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+[tool.ruff]
+target-version = "py310"

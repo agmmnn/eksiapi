@@ -1,3 +1,5 @@
+from importlib.metadata import PackageNotFoundError, version
+
 from .auth import generate_api_secret
 from .client import EksiClient
 from .errors import (
@@ -8,6 +10,11 @@ from .errors import (
     EksiTransportError,
 )
 
+try:
+    __version__ = version("eksiapi")
+except PackageNotFoundError:  # pragma: no cover - only for unpackaged source trees
+    __version__ = "0.0.0"
+
 __all__ = [
     "EksiApiError",
     "EksiAuthenticationError",
@@ -15,5 +22,6 @@ __all__ = [
     "EksiNotFoundError",
     "EksiRateLimitError",
     "EksiTransportError",
+    "__version__",
     "generate_api_secret",
 ]
