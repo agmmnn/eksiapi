@@ -8,11 +8,11 @@ Set credentials via env vars to skip the prompt:
     EKSI_USERNAME=... EKSI_PASSWORD=... uv run examples/explore.py
 """
 
+import getpass
+import io
 import json
 import os
 import sys
-import io
-import getpass
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
@@ -26,14 +26,14 @@ def pp(data):
 def section(title):
     print(f"\n{'─' * 60}")
     print(f"  {title}")
-    print('─' * 60)
+    print("─" * 60)
 
 
 def run(label, fn, *args, **kwargs):
     section(label)
     try:
         pp(fn(*args, **kwargs))
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - exploration should continue per endpoint
         print(f"  ERROR: {e}")
 
 

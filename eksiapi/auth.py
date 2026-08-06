@@ -21,9 +21,10 @@ Output: Base64 NO_WRAP (no newlines)
 import base64
 import random
 import uuid
+
+from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.backends import default_backend
 
 # ── Embedded RSA public key (from _.sf.c0) ───────────────────────────────────
 _RSA_PUBKEY_B64 = (
@@ -37,17 +38,16 @@ _RSA_PUBKEY_B64 = (
 )
 
 # ── App constants (from _.sf fields) ─────────────────────────────────────────
-APP_UUID    = "c8ecd738-dc33-45a4-a977-ae8e2a51c644"   # _.sf.a
-APP_VERSION = "eksisozluk-android/137"                  # _.sf build string
-HEX_MIN     = 40
-HEX_MAX     = 80
-DAY_MAX     = 5000
-HOUR_MAX    = 5000
-MIN_MAX     = 10000
+APP_UUID = "c8ecd738-dc33-45a4-a977-ae8e2a51c644"  # _.sf.a
+APP_VERSION = "eksisozluk-android/137"  # _.sf build string
+HEX_MIN = 40
+HEX_MAX = 80
+DAY_MAX = 5000
+HOUR_MAX = 5000
+MIN_MAX = 10000
 
 _PUBLIC_KEY = serialization.load_der_public_key(
-    base64.b64decode(_RSA_PUBKEY_B64),
-    backend=default_backend()
+    base64.b64decode(_RSA_PUBKEY_B64), backend=default_backend()
 )
 
 
@@ -62,18 +62,23 @@ def generate_api_secret(server_time_ms: int, client_secret: str) -> str:
     Returns:
         Base64 Api-Secret string (no newlines)
     """
-    day_off  = random.randint(1, DAY_MAX)
+    day_off = random.randint(1, DAY_MAX)
     hour_off = random.randint(1, HOUR_MAX)
-    min_off  = random.randint(1, MIN_MAX)
+    min_off = random.randint(1, MIN_MAX)
 
-    adjusted_ms = (server_time_ms
-                   - day_off  * 86_400_000
-                   - hour_off *  3_600_000
-                   - min_off  *     60_000)
+    adjusted_ms = (
+        server_time_ms - day_off * 86_400_000 - hour_off * 3_600_000 - min_off * 60_000
+    )
 
     # random hex substring (6 UUIDs concatenated without dashes, sliced)
-    pool = (uuid.uuid4().hex + uuid.uuid4().hex + uuid.uuid4().hex +
-            uuid.uuid4().hex + uuid.uuid4().hex + uuid.uuid4().hex)
+    pool = (
+        uuid.uuid4().hex
+        + uuid.uuid4().hex
+        + uuid.uuid4().hex
+        + uuid.uuid4().hex
+        + uuid.uuid4().hex
+        + uuid.uuid4().hex
+    )
     hex_len = random.randint(HEX_MIN, HEX_MAX)
     random_hex = pool[:hex_len]
 
@@ -85,10 +90,7 @@ def generate_api_secret(server_time_ms: int, client_secret: str) -> str:
         f"-{client_secret}"
     )
 
-    ciphertext = _PUBLIC_KEY.encrypt(
-        plaintext.encode("utf-8"),
-        padding.PKCS1v15()
-    )
+    ciphertext = _PUBLIC_KEY.encrypt(plaintext.encode("utf-8"), padding.PKCS1v15())
     return base64.b64encode(ciphertext).decode("ascii")
 
 
@@ -97,5 +99,5 @@ if __name__ == "__main__":
     test_client_secret = str(uuid.uuid4())
     for i in range(3):
         secret = generate_api_secret(test_server_time, test_client_secret)
-        print(f"[{i+1}] len={len(secret)} Api-Secret={secret[:60]}...")
+        print(f"[{i + 1}] len={len(secret)} Api-Secret={secret[:60]}...")
     print("\n[+] Api-Secret generation working.")

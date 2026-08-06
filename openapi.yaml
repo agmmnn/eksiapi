@@ -126,7 +126,7 @@ components:
 
 security:
   - bearerAuth: []
-  - clientSecret: []
+    clientSecret: []
 
 paths:
 
@@ -194,7 +194,7 @@ paths:
         OAuth fields.
       security:
         - bearerAuth: []
-        - clientSecret: []
+          clientSecret: []
       requestBody:
         required: true
         content:
