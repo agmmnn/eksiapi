@@ -846,85 +846,14 @@ paths:
           $ref: '#/components/responses/RateLimited'
         '404':
           $ref: '#/components/responses/NotFound'
-  /v2/entry/entriesbytopic:
-    get:
-      tags:
-      - Entries
-      summary: Entries for a topic
-      operationId: entriesForATopic
-      description: Entries for a topic. An anonymous or account bearer token and the Client-Secret header are required.
-      x-eksi-auth-mode: anonymous
-      parameters:
-      - name: title
-        in: query
-        required: true
-        schema:
-          type: string
-        description: Topic slug or URL-encoded title
-        example: python
-      - name: p
-        in: query
-        schema:
-          type: integer
-          default: 1
-        description: Page number starting at 1.
-        example: 1
-      - $ref: '#/components/parameters/ClientSecretHeader'
-      responses:
-        '200':
-          description: Paginated entries for topic
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EntryTopicResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '429':
-          $ref: '#/components/responses/RateLimited'
-  /v2/entry/search:
-    get:
-      tags:
-      - Entries
-      summary: Search entries
-      operationId: searchEntries
-      description: Search entries. An anonymous or account bearer token and the Client-Secret header are required.
-      x-eksi-auth-mode: anonymous
-      parameters:
-      - name: searchTerm
-        in: query
-        required: true
-        schema:
-          type: string
-        description: Text to search for.
-        example: python
-      - name: p
-        in: query
-        schema:
-          type: integer
-          default: 1
-        description: Page number starting at 1.
-        example: 1
-      - $ref: '#/components/parameters/ClientSecretHeader'
-      responses:
-        '200':
-          description: Search results
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
-
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '429':
-          $ref: '#/components/responses/RateLimited'
-  /v2/entry/agenda:
+  /v2/index/olay/:
     get:
       tags:
       - Entries
       summary: Agenda entries
       operationId: listAgendaEntries
-      description: Agenda entries. An anonymous or account bearer token and the Client-Secret header are required.
-      x-eksi-auth-mode: anonymous
+      description: Agenda entries. A logged-in account bearer token and the Client-Secret header are required.
+      x-eksi-auth-mode: account
       parameters:
       - name: p
         in: query
@@ -1065,65 +994,295 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
 
-  # ── Topics / Search ─────────────────────────────────────────────────────────
-
         '401':
           $ref: '#/components/responses/Unauthorized'
         '429':
           $ref: '#/components/responses/RateLimited'
-  /v2/topic/search:
-    get:
+  /v2/index/search/:
+    post:
       tags:
       - Topics
-      summary: Search topics
+      summary: Search topic titles
       operationId: searchTopics
-      description: Search topics. An anonymous or account bearer token and the Client-Secret header are required.
+      description: Searches topic titles using the Android app's index search.
       x-eksi-auth-mode: anonymous
       parameters:
-      - name: searchTerm
-        in: query
-        required: true
-        schema:
-          type: string
-        description: Text to search for.
-        example: python
       - name: p
         in: query
         schema:
           type: integer
           default: 1
-        description: Page number starting at 1.
-        example: 1
+          minimum: 1
       - $ref: '#/components/parameters/ClientSecretHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [Keywords]
+              properties:
+                Keywords:
+                  type: string
+                SortOrder:
+                  type: integer
+                  default: 1
+                FavoritedOnly:
+                  type: boolean
+                  default: false
+                NiceOnly:
+                  type: boolean
+                  default: false
+            example:
+              Keywords: python
+              SortOrder: 1
+              FavoritedOnly: false
+              NiceOnly: false
       responses:
         '200':
-          description: Topic search results
+          description: Paginated topic search results
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
-
+                $ref: '#/components/schemas/TopicListResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '429':
           $ref: '#/components/responses/RateLimited'
-  /v2/topic/autocomplete:
+  /v2/index/debe/:
+    get:
+      tags:
+      - Feeds
+      summary: Yesterday's most-liked entries
+      operationId: listDebeEntries
+      description: Returns the live debe feed exposed by the Android app.
+      x-eksi-auth-mode: anonymous
+      parameters:
+      - name: p
+        in: query
+        schema:
+          type: integer
+          default: 1
+          minimum: 1
+      - $ref: '#/components/parameters/ClientSecretHeader'
+      responses:
+        '200':
+          description: Debe feed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  # ── Topics / Search ─────────────────────────────────────────────────────────
+
+  /v2/topic/query/:
     get:
       tags:
       - Topics
-      summary: Topic autocomplete suggestions
-      operationId: topicAutocompleteSuggestions
-      description: Topic autocomplete suggestions. An anonymous or account bearer token and the Client-Secret header are required.
+      summary: Resolve a topic term
+      operationId: resolveTopic
+      description: Resolves a title, slug or URL-like term to the topic router result used by the Android app.
       x-eksi-auth-mode: anonymous
       parameters:
-      - name: searchTerm
+      - name: term
         in: query
         required: true
         schema:
           type: string
-        description: Text to search for.
         example: python
       - $ref: '#/components/parameters/ClientSecretHeader'
+      responses:
+        '200':
+          description: Topic routing result containing QueryData.TopicId when a topic matches
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+  /v2/topic/{topicId}:
+    get:
+      tags:
+      - Topics
+      summary: Read a topic page
+      operationId: getTopic
+      description: Returns topic metadata and one page of entries.
+      x-eksi-auth-mode: anonymous
+      parameters:
+      - name: topicId
+        in: path
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        example: 109286
+      - name: p
+        in: query
+        schema:
+          type: integer
+          default: 1
+          minimum: 1
+      - $ref: '#/components/parameters/ClientSecretHeader'
+      responses:
+        '200':
+          description: Topic metadata and paginated entries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntryTopicResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+  /v2/topic/{topicId}/{actionName}:
+    get:
+      tags:
+      - Topics
+      summary: Read a filtered topic page
+      operationId: getFilteredTopic
+      description: Returns popular or today's entries for a topic.
+      x-eksi-auth-mode: anonymous
+      parameters:
+      - name: topicId
+        in: path
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+      - name: actionName
+        in: path
+        required: true
+        schema:
+          type: string
+          enum: [popular, today]
+      - name: p
+        in: query
+        schema:
+          type: integer
+          default: 1
+          minimum: 1
+      - $ref: '#/components/parameters/ClientSecretHeader'
+      responses:
+        '200':
+          description: Filtered topic entries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntryTopicResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+  /v2/topic/search:
+    post:
+      tags:
+      - Entries
+      summary: Search entries inside a topic
+      operationId: searchTopicEntries
+      description: Searches entry bodies within one numeric topic id.
+      x-eksi-auth-mode: anonymous
+      parameters:
+      - name: p
+        in: query
+        schema:
+          type: integer
+          default: 1
+          minimum: 1
+      - $ref: '#/components/parameters/ClientSecretHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [TopicId, Keywords]
+              properties:
+                TopicId:
+                  type: integer
+                  minimum: 1
+                Keywords:
+                  type: string
+            example:
+              TopicId: 109286
+              Keywords: python
+      responses:
+        '200':
+          description: Matching entries and topic metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntryTopicResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+  /v2/topic/search/advanced:
+    post:
+      tags:
+      - Entries
+      summary: Advanced search inside a topic
+      operationId: advancedSearchTopicEntries
+      description: Runs the Android app's advanced entry filters within one topic.
+      x-eksi-auth-mode: anonymous
+      parameters:
+      - name: p
+        in: query
+        schema:
+          type: integer
+          default: 1
+          minimum: 1
+      - $ref: '#/components/parameters/ClientSecretHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [TopicId]
+              additionalProperties: true
+              properties:
+                TopicId:
+                  type: integer
+                  minimum: 1
+      responses:
+        '200':
+          description: Matching entries and topic metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntryTopicResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+  /v2/autocomplete/query:
+    post:
+      tags:
+      - Topics
+      summary: Autocomplete topics and queries
+      operationId: autocompleteQuery
+      description: Returns title, query and nick suggestions for a partial term.
+      x-eksi-auth-mode: anonymous
+      parameters:
+      - $ref: '#/components/parameters/ClientSecretHeader'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [Term]
+              properties:
+                Term:
+                  type: string
       responses:
         '200':
           description: Autocomplete suggestions
@@ -1131,7 +1290,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
-
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+  /v2/autocomplete/nick:
+    post:
+      tags:
+      - Profiles
+      summary: Autocomplete nicknames
+      operationId: autocompleteNicks
+      description: Returns nickname suggestions for a partial term.
+      x-eksi-auth-mode: anonymous
+      parameters:
+      - $ref: '#/components/parameters/ClientSecretHeader'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [Term]
+              properties:
+                Term:
+                  type: string
+      responses:
+        '200':
+          description: Nickname suggestions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '429':

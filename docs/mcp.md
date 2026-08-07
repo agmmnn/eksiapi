@@ -152,13 +152,15 @@ EKSI_MCP_MIN_INTERVAL=0.35
 These tools are available in both modes:
 
 - `eksi_search_topics`
-- `eksi_search_entries`
+- `eksi_resolve_topic`
+- `eksi_autocomplete`
+- `eksi_search_entries` (requires a numeric topic id)
 - `eksi_get_topic_entries`
 - `eksi_get_entry`
 - `eksi_get_user`
 - `eksi_get_user_entries`
 - `eksi_get_user_favorites`
-- `eksi_get_feed` (`today`, `popular`, or `agenda`)
+- `eksi_get_feed` (`today`, `popular`, `agenda`, or `debe`)
 - `eksi_get_account_summary`
 - `eksi_get_notifications`
 - `eksi_get_channels`

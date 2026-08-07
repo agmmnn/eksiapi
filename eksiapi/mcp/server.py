@@ -31,6 +31,7 @@ Page = Annotated[int, Field(ge=1, le=100, description="Page number, from 1 to 10
 Query = Annotated[str, Field(min_length=1, max_length=200)]
 Nick = Annotated[str, Field(min_length=1, max_length=60)]
 EntryId = Annotated[int, Field(gt=0)]
+TopicId = Annotated[int, Field(gt=0)]
 
 READ_ONLY = ToolAnnotations(
     readOnlyHint=True,
@@ -204,11 +205,33 @@ def create_server(
         )
 
     @server.tool(annotations=READ_ONLY)
-    def eksi_search_entries(query: Query, page: Page = 1) -> ToolResponse:
-        """Search Ekşi Sözlük entry bodies matching a query."""
+    def eksi_resolve_topic(term: Query) -> ToolResponse:
+        """Resolve a topic title, slug or URL-like term to its numeric topic id."""
+        term = _clean(term, "term")
+        return ToolResponse(
+            data=service.call("resolve_topic_id", term),
+            source_url=f"https://eksisozluk.com/?q={quote(term, safe='')}",
+        )
+
+    @server.tool(annotations=READ_ONLY)
+    def eksi_autocomplete(
+        query: Query, kind: Literal["query", "nick"] = "query"
+    ) -> ToolResponse:
+        """Get title/query suggestions or nick suggestions for a partial term."""
+        query = _clean(query, "query")
+        method = "autocomplete" if kind == "query" else "autocomplete_nicks"
+        return ToolResponse(
+            data=service.call(method, query), source_url="https://eksisozluk.com/"
+        )
+
+    @server.tool(annotations=READ_ONLY)
+    def eksi_search_entries(
+        topic_id: TopicId, query: Query, page: Page = 1
+    ) -> ToolResponse:
+        """Search entry bodies inside one numeric topic id."""
         query = _clean(query, "query")
         return ToolResponse(
-            data=service.call("search_entries", query, page=page),
+            data=service.call("search_entries", topic_id, query, page=page),
             source_url=f"https://eksisozluk.com/entry/ara?q={quote(query, safe='')}",
             page=page,
         )
@@ -262,11 +285,11 @@ def create_server(
 
     @server.tool(annotations=READ_ONLY)
     def eksi_get_feed(
-        feed: Literal["today", "popular", "agenda"],
+        feed: Literal["today", "popular", "agenda", "debe"],
         page: Page = 1,
         channel_filters: list[str] | None = None,
     ) -> ToolResponse:
-        """Get the today, popular, or agenda feed; channel filters apply to popular."""
+        """Get the today, popular, agenda or debe feed; channel filters apply to popular."""
         if feed != "popular" and channel_filters:
             raise ValueError("channel_filters can only be used with the popular feed")
         if channel_filters and len(channel_filters) > 20:
@@ -274,15 +297,18 @@ def create_server(
 
         if feed == "popular":
             data = service.call(
-                "popular", page=page, channel_filters=channel_filters or []
+                "feed", feed, page=page, channel_filters=channel_filters or []
             )
             url = f"https://eksisozluk.com/basliklar/populer?p={page}"
         elif feed == "today":
-            data = service.call("today", page=page)
+            data = service.call("feed", feed, page=page)
             url = f"https://eksisozluk.com/basliklar/gundem?p={page}"
-        else:
-            data = service.call("agenda", page=page)
+        elif feed == "agenda":
+            data = service.call("feed", feed, page=page)
             url = f"https://eksisozluk.com/basliklar/olay?p={page}"
+        else:
+            data = service.call("feed", feed, page=page)
+            url = f"https://eksisozluk.com/debe?p={page}"
         return ToolResponse(data=data, source_url=url, page=page)
 
     @server.tool(annotations=READ_ONLY)

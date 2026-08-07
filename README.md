@@ -125,6 +125,8 @@ from eksiapi import EksiClient
 with EksiClient.anonymous(raw_response=False) as eksi:
     today = eksi.today()
     popular = eksi.popular()
+    debe = eksi.debe()
+    python = eksi.topic_entries("python")
     profile = eksi.user("agmmnn")
 ```
 
@@ -152,6 +154,15 @@ async with AsyncEksiClient.anonymous(raw_response=False) as eksi:
 
 [Authentication, responses, pagination, writes and async usage →](./docs/python-sdk.md)
 
+## 🖥️ Terminal UI
+
+[`eksitui`](https://github.com/agmmnn/eksitui) is the separate keyboard-focused terminal interface for browsing Ekşi Sözlük. It includes feeds, search, entry pagination, themes and mouse support.
+
+```bash
+uv tool install eksitui
+eksi
+```
+
 ## 🟠 Postman
 
 1. [Open the public collection](https://documenter.getpostman.com/view/24047519/2sBY4VLHxb) and select **Run in Postman**.
@@ -168,13 +179,14 @@ The collection generates the required authentication values and stores the sessi
 | Python application or script     | Sync/async SDK   | `pip install eksiapi`                                                                          |
 | Read access for an AI agent      | Read-only MCP    | `uv tool install "eksiapi[mcp]"`                                                               |
 | Account actions from an AI agent | Interactive MCP  | `eksiapi mcp --mode interactive`                                                               |
+| Terminal application             | Textual TUI      | `uv tool install eksitui`                                                                      |
 | HTTP route reference             | Postman collection | [Public API documentation](https://documenter.getpostman.com/view/24047519/2sBY4VLHxb) |
 
 ## ✨ Features
 
 | Feature         | Included                                                                                                                |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| 🔎 API coverage | Today and popular feeds, topic and entry search, profiles, comments, channels, user history and pagination              |
+| 🔎 API coverage | Today, popular and debe feeds, topic resolution and entry search, profiles, comments, channels, user history and pagination |
 | 🐍 Python SDK   | Matching sync and async clients, typed views, safe-read retries, token refresh, rate-limit metadata and test transports |
 | 🤖 MCP server   | Structured results, canonical source URLs, bounded topic research and read-only anonymous access                        |
 | 🛡️ Write safety | Deterministic dry runs, no automatic write retries, secret-free audit events and human-approved MCP execution           |

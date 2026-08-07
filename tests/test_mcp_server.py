@@ -38,12 +38,13 @@ def test_tools_are_read_only_and_search_returns_structured_data() -> None:
     async def run() -> None:
         async with Client(server) as client:
             tools = (await client.list_tools()).tools
-            assert len(tools) == 11
+            assert len(tools) == 13
             assert all(tool.annotations.read_only_hint is True for tool in tools)
             assert all(tool.annotations.open_world_hint is True for tool in tools)
 
             result = await client.call_tool(
-                "eksi_search_entries", {"query": " yapay zeka ", "page": 2}
+                "eksi_search_entries",
+                {"topic_id": 123, "query": " yapay zeka ", "page": 2},
             )
             assert result.is_error is False
             assert result.structured_content is not None
@@ -109,6 +110,8 @@ def test_all_read_tools_route_to_client() -> None:
     server = create_server(lambda: fake, min_interval=0)
     calls = [
         ("eksi_search_topics", {"query": "python", "page": 2}),
+        ("eksi_resolve_topic", {"term": "python"}),
+        ("eksi_autocomplete", {"query": "py", "kind": "query"}),
         ("eksi_get_topic_entries", {"topic": "python", "page": 3}),
         ("eksi_get_entry", {"entry_id": 42}),
         ("eksi_get_user", {"nick": "alice/bob"}),
@@ -128,7 +131,7 @@ def test_all_read_tools_route_to_client() -> None:
                 assert result.is_error is False
 
     asyncio.run(run())
-    assert any(name == "popular" for name, _, _ in fake.calls)
+    assert any(name == "feed" and args == ("popular",) for name, args, _ in fake.calls)
     server._eksi_service.close()
     assert fake.closed is True
 

@@ -139,6 +139,50 @@ class Entry:
 
 
 @dataclass(frozen=True, slots=True)
+class Topic:
+    """Normalized topic page returned by the Android API."""
+
+    id: int | None
+    title: str | None
+    slug: str | None
+    entries: tuple[Entry, ...]
+    page: int | None
+    page_count: int | None
+    raw: Mapping[str, Any] = field(repr=False)
+
+    @classmethod
+    def from_mapping(cls, data: Mapping[str, Any]) -> Topic:
+        def parsed(*names: str) -> int | None:
+            value = _pick(data, *names)
+            return (
+                int(value)
+                if isinstance(value, int | str) and str(value).isdigit()
+                else None
+            )
+
+        raw_entries = _pick(data, "Entries", "entries", default=[])
+        entries = (
+            tuple(
+                Entry.from_mapping(item)
+                for item in raw_entries
+                if isinstance(item, Mapping)
+            )
+            if isinstance(raw_entries, Sequence)
+            and not isinstance(raw_entries, str | bytes | bytearray)
+            else ()
+        )
+        return cls(
+            id=parsed("Id", "id", "TopicId", "topicId"),
+            title=_pick(data, "Title", "title"),
+            slug=_pick(data, "Slug", "slug"),
+            entries=entries,
+            page=parsed("PageIndex", "pageIndex", "Page", "page"),
+            page_count=parsed("PageCount", "pageCount", "TotalPages", "totalPages"),
+            raw=data,
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class User:
     nick: str | None
     id: int | None
@@ -193,6 +237,8 @@ class Message:
 
 
 _ITEM_KEYS = (
+    "Topics",
+    "topics",
     "Entries",
     "entries",
     "EntryList",
@@ -205,6 +251,12 @@ _ITEM_KEYS = (
     "messages",
     "Results",
     "results",
+    "DebeItems",
+    "debeItems",
+    "Comments",
+    "comments",
+    "Users",
+    "users",
 )
 
 

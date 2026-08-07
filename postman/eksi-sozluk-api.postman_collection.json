@@ -2146,6 +2146,240 @@
           }
         },
         {
+          "name": "Yesterday's most-liked entries",
+          "request": {
+            "name": "Yesterday's most-liked entries",
+            "description": {
+              "content": "Returns the live debe feed exposed by the Android app.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v2",
+                "index",
+                "debe",
+                ""
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "p",
+                  "value": "1"
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "disabled": false,
+                "description": {
+                  "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                  "type": "text/plain"
+                },
+                "key": "Client-Secret",
+                "value": "{{clientSecret}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "name": "Debe feed",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v2",
+                    "index",
+                    "debe",
+                    ""
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "p",
+                      "value": "1"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "disabled": false,
+                    "description": {
+                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                      "type": "text/plain"
+                    },
+                    "key": "Client-Secret",
+                    "value": "{{clientSecret}}"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"Success\": true,\n  \"Data\": \"\",\n  \"Message\": null,\n  \"StatusCode\": 200\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "The bearer token, Client-Secret or authentication flow is missing or invalid.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v2",
+                    "index",
+                    "debe",
+                    ""
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "p",
+                      "value": "1"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "disabled": false,
+                    "description": {
+                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                      "type": "text/plain"
+                    },
+                    "key": "Client-Secret",
+                    "value": "{{clientSecret}}"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"Success\": false,\n  \"Message\": \"Authorization has been denied for this request.\",\n  \"Data\": null,\n  \"StatusCode\": 401\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "The upstream API rate limit was reached.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v2",
+                    "index",
+                    "debe",
+                    ""
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "p",
+                      "value": "1"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "disabled": false,
+                    "description": {
+                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                      "type": "text/plain"
+                    },
+                    "key": "Client-Secret",
+                    "value": "{{clientSecret}}"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "Seconds to wait before another safe read.",
+                    "type": "text/plain"
+                  },
+                  "key": "Retry-After",
+                  "value": "60"
+                }
+              ],
+              "body": "{\n  \"Success\": false,\n  \"Message\": \"Too many requests.\",\n  \"Data\": null,\n  \"StatusCode\": 429\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
           "name": "Available channels",
           "request": {
             "name": "Available channels",
@@ -2572,18 +2806,305 @@
       "description": "Topic search, autocomplete, metadata and follow state.",
       "item": [
         {
-          "name": "Search topics",
+          "name": "Search topic titles",
           "request": {
-            "name": "Search topics",
+            "name": "Search topic titles",
             "description": {
-              "content": "Search topics. An anonymous or account bearer token and the Client-Secret header are required.",
+              "content": "Searches topic titles using the Android app's index search.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v2",
+                "index",
+                "search",
+                ""
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "p",
+                  "value": "1"
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "disabled": false,
+                "description": {
+                  "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                  "type": "text/plain"
+                },
+                "key": "Client-Secret",
+                "value": "{{clientSecret}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Keywords\": \"python\",\n  \"SortOrder\": 1,\n  \"FavoritedOnly\": false,\n  \"NiceOnly\": false\n}",
+              "options": {
+                "raw": {
+                  "headerFamily": "json",
+                  "language": "json"
+                }
+              }
+            },
+            "auth": null
+          },
+          "response": [
+            {
+              "name": "Paginated topic search results",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v2",
+                    "index",
+                    "search",
+                    ""
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "p",
+                      "value": "1"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "disabled": false,
+                    "description": {
+                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                      "type": "text/plain"
+                    },
+                    "key": "Client-Secret",
+                    "value": "{{clientSecret}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Keywords\": \"python\",\n  \"SortOrder\": 1,\n  \"FavoritedOnly\": false,\n  \"NiceOnly\": false\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"Success\": true,\n  \"Data\": {\n    \"Topics\": [\n      {\n        \"TopicId\": 123,\n        \"Title\": \"example topic\",\n        \"MatchedCount\": 24,\n        \"FullCount\": 1888,\n        \"Day\": \"string\"\n      },\n      {\n        \"TopicId\": 123,\n        \"Title\": \"example topic\",\n        \"MatchedCount\": 24,\n        \"FullCount\": 1888,\n        \"Day\": \"string\"\n      }\n    ],\n    \"PageCount\": 1,\n    \"PageSize\": 50,\n    \"PageIndex\": 1\n  },\n  \"Message\": null,\n  \"StatusCode\": 200\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "The bearer token, Client-Secret or authentication flow is missing or invalid.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v2",
+                    "index",
+                    "search",
+                    ""
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "p",
+                      "value": "1"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "disabled": false,
+                    "description": {
+                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                      "type": "text/plain"
+                    },
+                    "key": "Client-Secret",
+                    "value": "{{clientSecret}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Keywords\": \"python\",\n  \"SortOrder\": 1,\n  \"FavoritedOnly\": false,\n  \"NiceOnly\": false\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"Success\": false,\n  \"Message\": \"Authorization has been denied for this request.\",\n  \"Data\": null,\n  \"StatusCode\": 401\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "The upstream API rate limit was reached.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v2",
+                    "index",
+                    "search",
+                    ""
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "p",
+                      "value": "1"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "disabled": false,
+                    "description": {
+                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                      "type": "text/plain"
+                    },
+                    "key": "Client-Secret",
+                    "value": "{{clientSecret}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"Keywords\": \"python\",\n  \"SortOrder\": 1,\n  \"FavoritedOnly\": false,\n  \"NiceOnly\": false\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "Seconds to wait before another safe read.",
+                    "type": "text/plain"
+                  },
+                  "key": "Retry-After",
+                  "value": "60"
+                }
+              ],
+              "body": "{\n  \"Success\": false,\n  \"Message\": \"Too many requests.\",\n  \"Data\": null,\n  \"StatusCode\": 429\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "name": "Resolve a topic term",
+          "request": {
+            "name": "Resolve a topic term",
+            "description": {
+              "content": "Resolves a title, slug or URL-like term to the topic router result used by the Android app.",
               "type": "text/plain"
             },
             "url": {
               "path": [
                 "v2",
                 "topic",
-                "search"
+                "query",
+                ""
               ],
               "host": [
                 "{{baseUrl}}"
@@ -2592,20 +3113,11 @@
                 {
                   "disabled": false,
                   "description": {
-                    "content": "(Required) Text to search for.",
+                    "content": "(Required) ",
                     "type": "text/plain"
                   },
-                  "key": "searchTerm",
+                  "key": "term",
                   "value": "python"
-                },
-                {
-                  "disabled": true,
-                  "description": {
-                    "content": "Page number starting at 1.",
-                    "type": "text/plain"
-                  },
-                  "key": "p",
-                  "value": "1"
                 }
               ],
               "variable": []
@@ -2631,13 +3143,14 @@
           },
           "response": [
             {
-              "name": "Topic search results",
+              "name": "Topic routing result containing QueryData.TopicId when a topic matches",
               "originalRequest": {
                 "url": {
                   "path": [
                     "v2",
                     "topic",
-                    "search"
+                    "query",
+                    ""
                   ],
                   "host": [
                     "{{baseUrl}}"
@@ -2646,20 +3159,11 @@
                     {
                       "disabled": false,
                       "description": {
-                        "content": "(Required) Text to search for.",
+                        "content": "(Required) ",
                         "type": "text/plain"
                       },
-                      "key": "searchTerm",
+                      "key": "term",
                       "value": "python"
-                    },
-                    {
-                      "disabled": true,
-                      "description": {
-                        "content": "Page number starting at 1.",
-                        "type": "text/plain"
-                      },
-                      "key": "p",
-                      "value": "1"
                     }
                   ],
                   "variable": []
@@ -2701,7 +3205,8 @@
                   "path": [
                     "v2",
                     "topic",
-                    "search"
+                    "query",
+                    ""
                   ],
                   "host": [
                     "{{baseUrl}}"
@@ -2710,20 +3215,11 @@
                     {
                       "disabled": false,
                       "description": {
-                        "content": "(Required) Text to search for.",
+                        "content": "(Required) ",
                         "type": "text/plain"
                       },
-                      "key": "searchTerm",
+                      "key": "term",
                       "value": "python"
-                    },
-                    {
-                      "disabled": true,
-                      "description": {
-                        "content": "Page number starting at 1.",
-                        "type": "text/plain"
-                      },
-                      "key": "p",
-                      "value": "1"
                     }
                   ],
                   "variable": []
@@ -2765,7 +3261,8 @@
                   "path": [
                     "v2",
                     "topic",
-                    "search"
+                    "query",
+                    ""
                   ],
                   "host": [
                     "{{baseUrl}}"
@@ -2774,20 +3271,11 @@
                     {
                       "disabled": false,
                       "description": {
-                        "content": "(Required) Text to search for.",
+                        "content": "(Required) ",
                         "type": "text/plain"
                       },
-                      "key": "searchTerm",
+                      "key": "term",
                       "value": "python"
-                    },
-                    {
-                      "disabled": true,
-                      "description": {
-                        "content": "Page number starting at 1.",
-                        "type": "text/plain"
-                      },
-                      "key": "p",
-                      "value": "1"
                     }
                   ],
                   "variable": []
@@ -2838,34 +3326,45 @@
           }
         },
         {
-          "name": "Topic autocomplete suggestions",
+          "name": "Read a topic page",
           "request": {
-            "name": "Topic autocomplete suggestions",
+            "name": "Read a topic page",
             "description": {
-              "content": "Topic autocomplete suggestions. An anonymous or account bearer token and the Client-Secret header are required.",
+              "content": "Returns topic metadata and one page of entries.",
               "type": "text/plain"
             },
             "url": {
               "path": [
                 "v2",
                 "topic",
-                "autocomplete"
+                ":topicId"
               ],
               "host": [
                 "{{baseUrl}}"
               ],
               "query": [
                 {
-                  "disabled": false,
+                  "disabled": true,
                   "description": {
-                    "content": "(Required) Text to search for.",
+                    "content": "",
                     "type": "text/plain"
                   },
-                  "key": "searchTerm",
-                  "value": "python"
+                  "key": "p",
+                  "value": "1"
                 }
               ],
-              "variable": []
+              "variable": [
+                {
+                  "type": "any",
+                  "value": "109286",
+                  "key": "topicId",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) ",
+                    "type": "text/plain"
+                  }
+                }
+              ]
             },
             "header": [
               {
@@ -2888,29 +3387,40 @@
           },
           "response": [
             {
-              "name": "Autocomplete suggestions",
+              "name": "Topic metadata and paginated entries",
               "originalRequest": {
                 "url": {
                   "path": [
                     "v2",
                     "topic",
-                    "autocomplete"
+                    ":topicId"
                   ],
                   "host": [
                     "{{baseUrl}}"
                   ],
                   "query": [
                     {
-                      "disabled": false,
+                      "disabled": true,
                       "description": {
-                        "content": "(Required) Text to search for.",
+                        "content": "",
                         "type": "text/plain"
                       },
-                      "key": "searchTerm",
-                      "value": "python"
+                      "key": "p",
+                      "value": "1"
                     }
                   ],
-                  "variable": []
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) ",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "109286",
+                      "key": "topicId"
+                    }
+                  ]
                 },
                 "header": [
                   {
@@ -2938,7 +3448,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"Success\": true,\n  \"Data\": \"\",\n  \"Message\": null,\n  \"StatusCode\": 200\n}",
+              "body": "{\n  \"Success\": true,\n  \"Data\": {\n    \"Id\": 1,\n    \"Title\": \"example topic\",\n    \"Entries\": [\n      {\n        \"Id\": 1,\n        \"Content\": \"Example entry content.\",\n        \"Author\": {\n          \"Nick\": \"example-user\",\n          \"Id\": 42\n        },\n        \"Created\": \"2026-08-07T12:00:00Z\",\n        \"LastUpdated\": null,\n        \"IsFavorite\": false,\n        \"FavoriteCount\": 0,\n        \"LikeCount\": 0,\n        \"CommentCount\": 0,\n        \"AvatarUrl\": \"https://example.com/avatar.png\"\n      },\n      {\n        \"Id\": 1,\n        \"Content\": \"Example entry content.\",\n        \"Author\": {\n          \"Nick\": \"example-user\",\n          \"Id\": 42\n        },\n        \"Created\": \"2026-08-07T12:00:00Z\",\n        \"LastUpdated\": null,\n        \"IsFavorite\": false,\n        \"FavoriteCount\": 0,\n        \"LikeCount\": 0,\n        \"CommentCount\": 0,\n        \"AvatarUrl\": \"https://example.com/avatar.png\"\n      }\n    ],\n    \"PageCount\": 1,\n    \"PageSize\": 10,\n    \"PageIndex\": 1\n  },\n  \"Message\": null,\n  \"StatusCode\": 200\n}",
               "cookie": [],
               "_postman_previewlanguage": "json"
             },
@@ -2949,23 +3459,407 @@
                   "path": [
                     "v2",
                     "topic",
-                    "autocomplete"
+                    ":topicId"
                   ],
                   "host": [
                     "{{baseUrl}}"
                   ],
                   "query": [
                     {
-                      "disabled": false,
+                      "disabled": true,
                       "description": {
-                        "content": "(Required) Text to search for.",
+                        "content": "",
                         "type": "text/plain"
                       },
-                      "key": "searchTerm",
-                      "value": "python"
+                      "key": "p",
+                      "value": "1"
                     }
                   ],
-                  "variable": []
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) ",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "109286",
+                      "key": "topicId"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "disabled": false,
+                    "description": {
+                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                      "type": "text/plain"
+                    },
+                    "key": "Client-Secret",
+                    "value": "{{clientSecret}}"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"Success\": false,\n  \"Message\": \"Authorization has been denied for this request.\",\n  \"Data\": null,\n  \"StatusCode\": 401\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "The requested topic, entry, user or account object was not found.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v2",
+                    "topic",
+                    ":topicId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "p",
+                      "value": "1"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) ",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "109286",
+                      "key": "topicId"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "disabled": false,
+                    "description": {
+                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                      "type": "text/plain"
+                    },
+                    "key": "Client-Secret",
+                    "value": "{{clientSecret}}"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"Success\": false,\n  \"Message\": \"The requested resource was not found.\",\n  \"Data\": null,\n  \"StatusCode\": 404\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "The upstream API rate limit was reached.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v2",
+                    "topic",
+                    ":topicId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "p",
+                      "value": "1"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) ",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "109286",
+                      "key": "topicId"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "disabled": false,
+                    "description": {
+                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                      "type": "text/plain"
+                    },
+                    "key": "Client-Secret",
+                    "value": "{{clientSecret}}"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "Seconds to wait before another safe read.",
+                    "type": "text/plain"
+                  },
+                  "key": "Retry-After",
+                  "value": "60"
+                }
+              ],
+              "body": "{\n  \"Success\": false,\n  \"Message\": \"Too many requests.\",\n  \"Data\": null,\n  \"StatusCode\": 429\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "name": "Read a filtered topic page",
+          "request": {
+            "name": "Read a filtered topic page",
+            "description": {
+              "content": "Returns popular or today's entries for a topic.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v2",
+                "topic",
+                ":topicId",
+                ":actionName"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "p",
+                  "value": "1"
+                }
+              ],
+              "variable": [
+                {
+                  "type": "any",
+                  "value": "6532",
+                  "key": "topicId",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) ",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "today",
+                  "key": "actionName",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required)  (This can only be one of popular,today)",
+                    "type": "text/plain"
+                  }
+                }
+              ]
+            },
+            "header": [
+              {
+                "disabled": false,
+                "description": {
+                  "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                  "type": "text/plain"
+                },
+                "key": "Client-Secret",
+                "value": "{{clientSecret}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "name": "Filtered topic entries",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v2",
+                    "topic",
+                    ":topicId",
+                    ":actionName"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "p",
+                      "value": "1"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) ",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "6532",
+                      "key": "topicId"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required)  (This can only be one of popular,today)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "today",
+                      "key": "actionName"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "disabled": false,
+                    "description": {
+                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                      "type": "text/plain"
+                    },
+                    "key": "Client-Secret",
+                    "value": "{{clientSecret}}"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"Success\": true,\n  \"Data\": {\n    \"Id\": 1,\n    \"Title\": \"example topic\",\n    \"Entries\": [\n      {\n        \"Id\": 1,\n        \"Content\": \"Example entry content.\",\n        \"Author\": {\n          \"Nick\": \"example-user\",\n          \"Id\": 42\n        },\n        \"Created\": \"2026-08-07T12:00:00Z\",\n        \"LastUpdated\": null,\n        \"IsFavorite\": false,\n        \"FavoriteCount\": 0,\n        \"LikeCount\": 0,\n        \"CommentCount\": 0,\n        \"AvatarUrl\": \"https://example.com/avatar.png\"\n      },\n      {\n        \"Id\": 1,\n        \"Content\": \"Example entry content.\",\n        \"Author\": {\n          \"Nick\": \"example-user\",\n          \"Id\": 42\n        },\n        \"Created\": \"2026-08-07T12:00:00Z\",\n        \"LastUpdated\": null,\n        \"IsFavorite\": false,\n        \"FavoriteCount\": 0,\n        \"LikeCount\": 0,\n        \"CommentCount\": 0,\n        \"AvatarUrl\": \"https://example.com/avatar.png\"\n      }\n    ],\n    \"PageCount\": 1,\n    \"PageSize\": 10,\n    \"PageIndex\": 1\n  },\n  \"Message\": null,\n  \"StatusCode\": 200\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "The bearer token, Client-Secret or authentication flow is missing or invalid.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v2",
+                    "topic",
+                    ":topicId",
+                    ":actionName"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "p",
+                      "value": "1"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) ",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "6532",
+                      "key": "topicId"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required)  (This can only be one of popular,today)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "today",
+                      "key": "actionName"
+                    }
+                  ]
                 },
                 "header": [
                   {
@@ -3004,23 +3898,45 @@
                   "path": [
                     "v2",
                     "topic",
-                    "autocomplete"
+                    ":topicId",
+                    ":actionName"
                   ],
                   "host": [
                     "{{baseUrl}}"
                   ],
                   "query": [
                     {
-                      "disabled": false,
+                      "disabled": true,
                       "description": {
-                        "content": "(Required) Text to search for.",
+                        "content": "",
                         "type": "text/plain"
                       },
-                      "key": "searchTerm",
-                      "value": "python"
+                      "key": "p",
+                      "value": "1"
                     }
                   ],
-                  "variable": []
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) ",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "6532",
+                      "key": "topicId"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required)  (This can only be one of popular,today)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "today",
+                      "key": "actionName"
+                    }
+                  ]
                 },
                 "header": [
                   {
@@ -3039,6 +3955,264 @@
                 ],
                 "method": "GET",
                 "body": {}
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "Seconds to wait before another safe read.",
+                    "type": "text/plain"
+                  },
+                  "key": "Retry-After",
+                  "value": "60"
+                }
+              ],
+              "body": "{\n  \"Success\": false,\n  \"Message\": \"Too many requests.\",\n  \"Data\": null,\n  \"StatusCode\": 429\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "name": "Autocomplete topics and queries",
+          "request": {
+            "name": "Autocomplete topics and queries",
+            "description": {
+              "content": "Returns title, query and nick suggestions for a partial term.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v2",
+                "autocomplete",
+                "query"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "disabled": false,
+                "description": {
+                  "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                  "type": "text/plain"
+                },
+                "key": "Client-Secret",
+                "value": "{{clientSecret}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) ",
+                    "type": "text/plain"
+                  },
+                  "key": "Term",
+                  "value": "string"
+                }
+              ]
+            },
+            "auth": null
+          },
+          "response": [
+            {
+              "name": "Autocomplete suggestions",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v2",
+                    "autocomplete",
+                    "query"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "disabled": false,
+                    "description": {
+                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                      "type": "text/plain"
+                    },
+                    "key": "Client-Secret",
+                    "value": "{{clientSecret}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/x-www-form-urlencoded"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) ",
+                        "type": "text/plain"
+                      },
+                      "key": "Term",
+                      "value": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"Success\": true,\n  \"Data\": \"\",\n  \"Message\": null,\n  \"StatusCode\": 200\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "The bearer token, Client-Secret or authentication flow is missing or invalid.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v2",
+                    "autocomplete",
+                    "query"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "disabled": false,
+                    "description": {
+                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                      "type": "text/plain"
+                    },
+                    "key": "Client-Secret",
+                    "value": "{{clientSecret}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/x-www-form-urlencoded"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) ",
+                        "type": "text/plain"
+                      },
+                      "key": "Term",
+                      "value": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"Success\": false,\n  \"Message\": \"Authorization has been denied for this request.\",\n  \"Data\": null,\n  \"StatusCode\": 401\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "The upstream API rate limit was reached.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v2",
+                    "autocomplete",
+                    "query"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "disabled": false,
+                    "description": {
+                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                      "type": "text/plain"
+                    },
+                    "key": "Client-Secret",
+                    "value": "{{clientSecret}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/x-www-form-urlencoded"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) ",
+                        "type": "text/plain"
+                      },
+                      "key": "Term",
+                      "value": "string"
+                    }
+                  ]
+                }
               },
               "status": "Too Many Requests",
               "code": 429,
@@ -4593,550 +5767,19 @@
           }
         },
         {
-          "name": "Entries for a topic",
-          "request": {
-            "name": "Entries for a topic",
-            "description": {
-              "content": "Entries for a topic. An anonymous or account bearer token and the Client-Secret header are required.",
-              "type": "text/plain"
-            },
-            "url": {
-              "path": [
-                "v2",
-                "entry",
-                "entriesbytopic"
-              ],
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "query": [
-                {
-                  "disabled": false,
-                  "description": {
-                    "content": "(Required) Topic slug or URL-encoded title",
-                    "type": "text/plain"
-                  },
-                  "key": "title",
-                  "value": "python"
-                },
-                {
-                  "disabled": true,
-                  "description": {
-                    "content": "Page number starting at 1.",
-                    "type": "text/plain"
-                  },
-                  "key": "p",
-                  "value": "1"
-                }
-              ],
-              "variable": []
-            },
-            "header": [
-              {
-                "disabled": false,
-                "description": {
-                  "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
-                  "type": "text/plain"
-                },
-                "key": "Client-Secret",
-                "value": "{{clientSecret}}"
-              },
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "method": "GET",
-            "body": {},
-            "auth": null
-          },
-          "response": [
-            {
-              "name": "Paginated entries for topic",
-              "originalRequest": {
-                "url": {
-                  "path": [
-                    "v2",
-                    "entry",
-                    "entriesbytopic"
-                  ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "query": [
-                    {
-                      "disabled": false,
-                      "description": {
-                        "content": "(Required) Topic slug or URL-encoded title",
-                        "type": "text/plain"
-                      },
-                      "key": "title",
-                      "value": "python"
-                    },
-                    {
-                      "disabled": true,
-                      "description": {
-                        "content": "Page number starting at 1.",
-                        "type": "text/plain"
-                      },
-                      "key": "p",
-                      "value": "1"
-                    }
-                  ],
-                  "variable": []
-                },
-                "header": [
-                  {
-                    "disabled": false,
-                    "description": {
-                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
-                      "type": "text/plain"
-                    },
-                    "key": "Client-Secret",
-                    "value": "{{clientSecret}}"
-                  },
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  }
-                ],
-                "method": "GET",
-                "body": {}
-              },
-              "status": "OK",
-              "code": 200,
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "body": "{\n  \"Success\": true,\n  \"Data\": {\n    \"Id\": 1,\n    \"Title\": \"example topic\",\n    \"Entries\": [\n      {\n        \"Id\": 1,\n        \"Content\": \"Example entry content.\",\n        \"Author\": {\n          \"Nick\": \"example-user\",\n          \"Id\": 42\n        },\n        \"Created\": \"2026-08-07T12:00:00Z\",\n        \"LastUpdated\": null,\n        \"IsFavorite\": false,\n        \"FavoriteCount\": 0,\n        \"LikeCount\": 0,\n        \"CommentCount\": 0,\n        \"AvatarUrl\": \"https://example.com/avatar.png\"\n      },\n      {\n        \"Id\": 1,\n        \"Content\": \"Example entry content.\",\n        \"Author\": {\n          \"Nick\": \"example-user\",\n          \"Id\": 42\n        },\n        \"Created\": \"2026-08-07T12:00:00Z\",\n        \"LastUpdated\": null,\n        \"IsFavorite\": false,\n        \"FavoriteCount\": 0,\n        \"LikeCount\": 0,\n        \"CommentCount\": 0,\n        \"AvatarUrl\": \"https://example.com/avatar.png\"\n      }\n    ],\n    \"PageCount\": 1,\n    \"PageSize\": 10,\n    \"PageIndex\": 1\n  },\n  \"Message\": null,\n  \"StatusCode\": 200\n}",
-              "cookie": [],
-              "_postman_previewlanguage": "json"
-            },
-            {
-              "name": "The bearer token, Client-Secret or authentication flow is missing or invalid.",
-              "originalRequest": {
-                "url": {
-                  "path": [
-                    "v2",
-                    "entry",
-                    "entriesbytopic"
-                  ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "query": [
-                    {
-                      "disabled": false,
-                      "description": {
-                        "content": "(Required) Topic slug or URL-encoded title",
-                        "type": "text/plain"
-                      },
-                      "key": "title",
-                      "value": "python"
-                    },
-                    {
-                      "disabled": true,
-                      "description": {
-                        "content": "Page number starting at 1.",
-                        "type": "text/plain"
-                      },
-                      "key": "p",
-                      "value": "1"
-                    }
-                  ],
-                  "variable": []
-                },
-                "header": [
-                  {
-                    "disabled": false,
-                    "description": {
-                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
-                      "type": "text/plain"
-                    },
-                    "key": "Client-Secret",
-                    "value": "{{clientSecret}}"
-                  },
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  }
-                ],
-                "method": "GET",
-                "body": {}
-              },
-              "status": "Unauthorized",
-              "code": 401,
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "body": "{\n  \"Success\": false,\n  \"Message\": \"Authorization has been denied for this request.\",\n  \"Data\": null,\n  \"StatusCode\": 401\n}",
-              "cookie": [],
-              "_postman_previewlanguage": "json"
-            },
-            {
-              "name": "The upstream API rate limit was reached.",
-              "originalRequest": {
-                "url": {
-                  "path": [
-                    "v2",
-                    "entry",
-                    "entriesbytopic"
-                  ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "query": [
-                    {
-                      "disabled": false,
-                      "description": {
-                        "content": "(Required) Topic slug or URL-encoded title",
-                        "type": "text/plain"
-                      },
-                      "key": "title",
-                      "value": "python"
-                    },
-                    {
-                      "disabled": true,
-                      "description": {
-                        "content": "Page number starting at 1.",
-                        "type": "text/plain"
-                      },
-                      "key": "p",
-                      "value": "1"
-                    }
-                  ],
-                  "variable": []
-                },
-                "header": [
-                  {
-                    "disabled": false,
-                    "description": {
-                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
-                      "type": "text/plain"
-                    },
-                    "key": "Client-Secret",
-                    "value": "{{clientSecret}}"
-                  },
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  }
-                ],
-                "method": "GET",
-                "body": {}
-              },
-              "status": "Too Many Requests",
-              "code": 429,
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                },
-                {
-                  "disabled": true,
-                  "description": {
-                    "content": "Seconds to wait before another safe read.",
-                    "type": "text/plain"
-                  },
-                  "key": "Retry-After",
-                  "value": "60"
-                }
-              ],
-              "body": "{\n  \"Success\": false,\n  \"Message\": \"Too many requests.\",\n  \"Data\": null,\n  \"StatusCode\": 429\n}",
-              "cookie": [],
-              "_postman_previewlanguage": "json"
-            }
-          ],
-          "event": [],
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          }
-        },
-        {
-          "name": "Search entries",
-          "request": {
-            "name": "Search entries",
-            "description": {
-              "content": "Search entries. An anonymous or account bearer token and the Client-Secret header are required.",
-              "type": "text/plain"
-            },
-            "url": {
-              "path": [
-                "v2",
-                "entry",
-                "search"
-              ],
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "query": [
-                {
-                  "disabled": false,
-                  "description": {
-                    "content": "(Required) Text to search for.",
-                    "type": "text/plain"
-                  },
-                  "key": "searchTerm",
-                  "value": "python"
-                },
-                {
-                  "disabled": true,
-                  "description": {
-                    "content": "Page number starting at 1.",
-                    "type": "text/plain"
-                  },
-                  "key": "p",
-                  "value": "1"
-                }
-              ],
-              "variable": []
-            },
-            "header": [
-              {
-                "disabled": false,
-                "description": {
-                  "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
-                  "type": "text/plain"
-                },
-                "key": "Client-Secret",
-                "value": "{{clientSecret}}"
-              },
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "method": "GET",
-            "body": {},
-            "auth": null
-          },
-          "response": [
-            {
-              "name": "Search results",
-              "originalRequest": {
-                "url": {
-                  "path": [
-                    "v2",
-                    "entry",
-                    "search"
-                  ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "query": [
-                    {
-                      "disabled": false,
-                      "description": {
-                        "content": "(Required) Text to search for.",
-                        "type": "text/plain"
-                      },
-                      "key": "searchTerm",
-                      "value": "python"
-                    },
-                    {
-                      "disabled": true,
-                      "description": {
-                        "content": "Page number starting at 1.",
-                        "type": "text/plain"
-                      },
-                      "key": "p",
-                      "value": "1"
-                    }
-                  ],
-                  "variable": []
-                },
-                "header": [
-                  {
-                    "disabled": false,
-                    "description": {
-                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
-                      "type": "text/plain"
-                    },
-                    "key": "Client-Secret",
-                    "value": "{{clientSecret}}"
-                  },
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  }
-                ],
-                "method": "GET",
-                "body": {}
-              },
-              "status": "OK",
-              "code": 200,
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "body": "{\n  \"Success\": true,\n  \"Data\": \"\",\n  \"Message\": null,\n  \"StatusCode\": 200\n}",
-              "cookie": [],
-              "_postman_previewlanguage": "json"
-            },
-            {
-              "name": "The bearer token, Client-Secret or authentication flow is missing or invalid.",
-              "originalRequest": {
-                "url": {
-                  "path": [
-                    "v2",
-                    "entry",
-                    "search"
-                  ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "query": [
-                    {
-                      "disabled": false,
-                      "description": {
-                        "content": "(Required) Text to search for.",
-                        "type": "text/plain"
-                      },
-                      "key": "searchTerm",
-                      "value": "python"
-                    },
-                    {
-                      "disabled": true,
-                      "description": {
-                        "content": "Page number starting at 1.",
-                        "type": "text/plain"
-                      },
-                      "key": "p",
-                      "value": "1"
-                    }
-                  ],
-                  "variable": []
-                },
-                "header": [
-                  {
-                    "disabled": false,
-                    "description": {
-                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
-                      "type": "text/plain"
-                    },
-                    "key": "Client-Secret",
-                    "value": "{{clientSecret}}"
-                  },
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  }
-                ],
-                "method": "GET",
-                "body": {}
-              },
-              "status": "Unauthorized",
-              "code": 401,
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "body": "{\n  \"Success\": false,\n  \"Message\": \"Authorization has been denied for this request.\",\n  \"Data\": null,\n  \"StatusCode\": 401\n}",
-              "cookie": [],
-              "_postman_previewlanguage": "json"
-            },
-            {
-              "name": "The upstream API rate limit was reached.",
-              "originalRequest": {
-                "url": {
-                  "path": [
-                    "v2",
-                    "entry",
-                    "search"
-                  ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "query": [
-                    {
-                      "disabled": false,
-                      "description": {
-                        "content": "(Required) Text to search for.",
-                        "type": "text/plain"
-                      },
-                      "key": "searchTerm",
-                      "value": "python"
-                    },
-                    {
-                      "disabled": true,
-                      "description": {
-                        "content": "Page number starting at 1.",
-                        "type": "text/plain"
-                      },
-                      "key": "p",
-                      "value": "1"
-                    }
-                  ],
-                  "variable": []
-                },
-                "header": [
-                  {
-                    "disabled": false,
-                    "description": {
-                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
-                      "type": "text/plain"
-                    },
-                    "key": "Client-Secret",
-                    "value": "{{clientSecret}}"
-                  },
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  }
-                ],
-                "method": "GET",
-                "body": {}
-              },
-              "status": "Too Many Requests",
-              "code": 429,
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                },
-                {
-                  "disabled": true,
-                  "description": {
-                    "content": "Seconds to wait before another safe read.",
-                    "type": "text/plain"
-                  },
-                  "key": "Retry-After",
-                  "value": "60"
-                }
-              ],
-              "body": "{\n  \"Success\": false,\n  \"Message\": \"Too many requests.\",\n  \"Data\": null,\n  \"StatusCode\": 429\n}",
-              "cookie": [],
-              "_postman_previewlanguage": "json"
-            }
-          ],
-          "event": [],
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          }
-        },
-        {
           "name": "Agenda entries",
           "request": {
             "name": "Agenda entries",
             "description": {
-              "content": "Agenda entries. An anonymous or account bearer token and the Client-Secret header are required.",
+              "content": "Agenda entries. A logged-in account bearer token and the Client-Secret header are required.",
               "type": "text/plain"
             },
             "url": {
               "path": [
                 "v2",
-                "entry",
-                "agenda"
+                "index",
+                "olay",
+                ""
               ],
               "host": [
                 "{{baseUrl}}"
@@ -5180,8 +5823,9 @@
                 "url": {
                   "path": [
                     "v2",
-                    "entry",
-                    "agenda"
+                    "index",
+                    "olay",
+                    ""
                   ],
                   "host": [
                     "{{baseUrl}}"
@@ -5235,8 +5879,9 @@
                 "url": {
                   "path": [
                     "v2",
-                    "entry",
-                    "agenda"
+                    "index",
+                    "olay",
+                    ""
                   ],
                   "host": [
                     "{{baseUrl}}"
@@ -5290,8 +5935,9 @@
                 "url": {
                   "path": [
                     "v2",
-                    "entry",
-                    "agenda"
+                    "index",
+                    "olay",
+                    ""
                   ],
                   "host": [
                     "{{baseUrl}}"
@@ -5326,6 +5972,574 @@
                 ],
                 "method": "GET",
                 "body": {}
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "Seconds to wait before another safe read.",
+                    "type": "text/plain"
+                  },
+                  "key": "Retry-After",
+                  "value": "60"
+                }
+              ],
+              "body": "{\n  \"Success\": false,\n  \"Message\": \"Too many requests.\",\n  \"Data\": null,\n  \"StatusCode\": 429\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "name": "Search entries inside a topic",
+          "request": {
+            "name": "Search entries inside a topic",
+            "description": {
+              "content": "Searches entry bodies within one numeric topic id.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v2",
+                "topic",
+                "search"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "p",
+                  "value": "1"
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "disabled": false,
+                "description": {
+                  "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                  "type": "text/plain"
+                },
+                "key": "Client-Secret",
+                "value": "{{clientSecret}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"TopicId\": 1,\n  \"Keywords\": \"python\"\n}",
+              "options": {
+                "raw": {
+                  "headerFamily": "json",
+                  "language": "json"
+                }
+              }
+            },
+            "auth": null
+          },
+          "response": [
+            {
+              "name": "Matching entries and topic metadata",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v2",
+                    "topic",
+                    "search"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "p",
+                      "value": "1"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "disabled": false,
+                    "description": {
+                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                      "type": "text/plain"
+                    },
+                    "key": "Client-Secret",
+                    "value": "{{clientSecret}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"TopicId\": 1,\n  \"Keywords\": \"python\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"Success\": true,\n  \"Data\": {\n    \"Id\": 1,\n    \"Title\": \"example topic\",\n    \"Entries\": [\n      {\n        \"Id\": 1,\n        \"Content\": \"Example entry content.\",\n        \"Author\": {\n          \"Nick\": \"example-user\",\n          \"Id\": 42\n        },\n        \"Created\": \"2026-08-07T12:00:00Z\",\n        \"LastUpdated\": null,\n        \"IsFavorite\": false,\n        \"FavoriteCount\": 0,\n        \"LikeCount\": 0,\n        \"CommentCount\": 0,\n        \"AvatarUrl\": \"https://example.com/avatar.png\"\n      },\n      {\n        \"Id\": 1,\n        \"Content\": \"Example entry content.\",\n        \"Author\": {\n          \"Nick\": \"example-user\",\n          \"Id\": 42\n        },\n        \"Created\": \"2026-08-07T12:00:00Z\",\n        \"LastUpdated\": null,\n        \"IsFavorite\": false,\n        \"FavoriteCount\": 0,\n        \"LikeCount\": 0,\n        \"CommentCount\": 0,\n        \"AvatarUrl\": \"https://example.com/avatar.png\"\n      }\n    ],\n    \"PageCount\": 1,\n    \"PageSize\": 10,\n    \"PageIndex\": 1\n  },\n  \"Message\": null,\n  \"StatusCode\": 200\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "The bearer token, Client-Secret or authentication flow is missing or invalid.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v2",
+                    "topic",
+                    "search"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "p",
+                      "value": "1"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "disabled": false,
+                    "description": {
+                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                      "type": "text/plain"
+                    },
+                    "key": "Client-Secret",
+                    "value": "{{clientSecret}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"TopicId\": 1,\n  \"Keywords\": \"python\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"Success\": false,\n  \"Message\": \"Authorization has been denied for this request.\",\n  \"Data\": null,\n  \"StatusCode\": 401\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "The upstream API rate limit was reached.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v2",
+                    "topic",
+                    "search"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "p",
+                      "value": "1"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "disabled": false,
+                    "description": {
+                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                      "type": "text/plain"
+                    },
+                    "key": "Client-Secret",
+                    "value": "{{clientSecret}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"TopicId\": 1,\n  \"Keywords\": \"python\"\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "Seconds to wait before another safe read.",
+                    "type": "text/plain"
+                  },
+                  "key": "Retry-After",
+                  "value": "60"
+                }
+              ],
+              "body": "{\n  \"Success\": false,\n  \"Message\": \"Too many requests.\",\n  \"Data\": null,\n  \"StatusCode\": 429\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "name": "Advanced search inside a topic",
+          "request": {
+            "name": "Advanced search inside a topic",
+            "description": {
+              "content": "Runs the Android app's advanced entry filters within one topic.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v2",
+                "topic",
+                "search",
+                "advanced"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "p",
+                  "value": "1"
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "disabled": false,
+                "description": {
+                  "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                  "type": "text/plain"
+                },
+                "key": "Client-Secret",
+                "value": "{{clientSecret}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"TopicId\": 1\n}",
+              "options": {
+                "raw": {
+                  "headerFamily": "json",
+                  "language": "json"
+                }
+              }
+            },
+            "auth": null
+          },
+          "response": [
+            {
+              "name": "Matching entries and topic metadata",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v2",
+                    "topic",
+                    "search",
+                    "advanced"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "p",
+                      "value": "1"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "disabled": false,
+                    "description": {
+                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                      "type": "text/plain"
+                    },
+                    "key": "Client-Secret",
+                    "value": "{{clientSecret}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"TopicId\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"Success\": true,\n  \"Data\": {\n    \"Id\": 1,\n    \"Title\": \"example topic\",\n    \"Entries\": [\n      {\n        \"Id\": 1,\n        \"Content\": \"Example entry content.\",\n        \"Author\": {\n          \"Nick\": \"example-user\",\n          \"Id\": 42\n        },\n        \"Created\": \"2026-08-07T12:00:00Z\",\n        \"LastUpdated\": null,\n        \"IsFavorite\": false,\n        \"FavoriteCount\": 0,\n        \"LikeCount\": 0,\n        \"CommentCount\": 0,\n        \"AvatarUrl\": \"https://example.com/avatar.png\"\n      },\n      {\n        \"Id\": 1,\n        \"Content\": \"Example entry content.\",\n        \"Author\": {\n          \"Nick\": \"example-user\",\n          \"Id\": 42\n        },\n        \"Created\": \"2026-08-07T12:00:00Z\",\n        \"LastUpdated\": null,\n        \"IsFavorite\": false,\n        \"FavoriteCount\": 0,\n        \"LikeCount\": 0,\n        \"CommentCount\": 0,\n        \"AvatarUrl\": \"https://example.com/avatar.png\"\n      }\n    ],\n    \"PageCount\": 1,\n    \"PageSize\": 10,\n    \"PageIndex\": 1\n  },\n  \"Message\": null,\n  \"StatusCode\": 200\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "The bearer token, Client-Secret or authentication flow is missing or invalid.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v2",
+                    "topic",
+                    "search",
+                    "advanced"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "p",
+                      "value": "1"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "disabled": false,
+                    "description": {
+                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                      "type": "text/plain"
+                    },
+                    "key": "Client-Secret",
+                    "value": "{{clientSecret}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"TopicId\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"Success\": false,\n  \"Message\": \"Authorization has been denied for this request.\",\n  \"Data\": null,\n  \"StatusCode\": 401\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "The upstream API rate limit was reached.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v2",
+                    "topic",
+                    "search",
+                    "advanced"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "",
+                        "type": "text/plain"
+                      },
+                      "key": "p",
+                      "value": "1"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "disabled": false,
+                    "description": {
+                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                      "type": "text/plain"
+                    },
+                    "key": "Client-Secret",
+                    "value": "{{clientSecret}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"TopicId\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  }
+                }
               },
               "status": "Too Many Requests",
               "code": 429,
@@ -11260,6 +12474,264 @@
                 ],
                 "method": "GET",
                 "body": {}
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "Seconds to wait before another safe read.",
+                    "type": "text/plain"
+                  },
+                  "key": "Retry-After",
+                  "value": "60"
+                }
+              ],
+              "body": "{\n  \"Success\": false,\n  \"Message\": \"Too many requests.\",\n  \"Data\": null,\n  \"StatusCode\": 429\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "name": "Autocomplete nicknames",
+          "request": {
+            "name": "Autocomplete nicknames",
+            "description": {
+              "content": "Returns nickname suggestions for a partial term.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v2",
+                "autocomplete",
+                "nick"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "disabled": false,
+                "description": {
+                  "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                  "type": "text/plain"
+                },
+                "key": "Client-Secret",
+                "value": "{{clientSecret}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) ",
+                    "type": "text/plain"
+                  },
+                  "key": "Term",
+                  "value": "string"
+                }
+              ]
+            },
+            "auth": null
+          },
+          "response": [
+            {
+              "name": "Nickname suggestions",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v2",
+                    "autocomplete",
+                    "nick"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "disabled": false,
+                    "description": {
+                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                      "type": "text/plain"
+                    },
+                    "key": "Client-Secret",
+                    "value": "{{clientSecret}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/x-www-form-urlencoded"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) ",
+                        "type": "text/plain"
+                      },
+                      "key": "Term",
+                      "value": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"Success\": true,\n  \"Data\": \"\",\n  \"Message\": null,\n  \"StatusCode\": 200\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "The bearer token, Client-Secret or authentication flow is missing or invalid.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v2",
+                    "autocomplete",
+                    "nick"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "disabled": false,
+                    "description": {
+                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                      "type": "text/plain"
+                    },
+                    "key": "Client-Secret",
+                    "value": "{{clientSecret}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/x-www-form-urlencoded"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) ",
+                        "type": "text/plain"
+                      },
+                      "key": "Term",
+                      "value": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"Success\": false,\n  \"Message\": \"Authorization has been denied for this request.\",\n  \"Data\": null,\n  \"StatusCode\": 401\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "The upstream API rate limit was reached.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v2",
+                    "autocomplete",
+                    "nick"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "disabled": false,
+                    "description": {
+                      "content": "(Required) Per-session client UUID. Use a local Postman variable and never publish a real value.",
+                      "type": "text/plain"
+                    },
+                    "key": "Client-Secret",
+                    "value": "{{clientSecret}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/x-www-form-urlencoded"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) ",
+                        "type": "text/plain"
+                      },
+                      "key": "Term",
+                      "value": "string"
+                    }
+                  ]
+                }
               },
               "status": "Too Many Requests",
               "code": 429,
