@@ -104,7 +104,7 @@ Example research requests:
 - “Bu başlıktaki ilk üç sayfanın ortak iddialarını karşılaştır.”
 - “Bu yazarın son entry'lerinde en sık geçen konular neler?”
 
-<p align="center"><img src="./assets/codex-mcp.png" width="760" alt="eksiapi MCP running in Codex"></p>
+<p align="center"><a href="./assets/codex-mcp.png"><img src="./assets/codex-mcp.png" width="49%" alt="eksiapi MCP running in Codex"></a> <a href="./assets/claude-mcp.png"><img src="./assets/claude-mcp.png" width="49%" alt="eksiapi MCP running in Claude"></a></p>
 
 The server starts anonymously and read-only. Account actions require an explicit login, interactive mode and a human confirmation step:
 
