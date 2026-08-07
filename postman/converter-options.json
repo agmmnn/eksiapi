@@ -1,0 +1,10 @@
+{
+  "requestNameSource": "Fallback",
+  "folderStrategy": "Tags",
+  "nestedFolderHierarchy": false,
+  "includeAuthInfoInExample": false,
+  "enableOptionalParameters": false,
+  "alwaysInheritAuthentication": true,
+  "parametersResolution": "Example",
+  "exampleParametersResolution": "Example"
+}

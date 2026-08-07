@@ -523,7 +523,7 @@ mcp = create_server()
 
 def main(argv: list[str] | None = None) -> None:
     """Run the local server over stdio."""
-    parser = argparse.ArgumentParser(prog="eksi-mcp")
+    parser = argparse.ArgumentParser(prog="eksiapi mcp")
     parser.add_argument(
         "--mode", choices=("readonly", "interactive"), default="readonly"
     )

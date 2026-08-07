@@ -208,7 +208,7 @@ def test_login_client_closes_after_failed_login(monkeypatch) -> None:
 
 def test_missing_credentials_are_rejected(monkeypatch) -> None:
     monkeypatch.setattr(credentials, "load_stored_credentials", lambda: None)
-    with pytest.raises(CredentialError, match="eksi-auth login"):
+    with pytest.raises(CredentialError, match="eksiapi auth login"):
         credentials.create_authenticated_client()
 
 

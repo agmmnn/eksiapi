@@ -59,14 +59,16 @@ def main() -> int:
             cwd=work,
         )
         missing_extra = subprocess.run(
-            (str(console_script(base, "eksi-mcp")),),
+            (str(console_script(base, "eksiapi")), "mcp"),
             cwd=work,
             check=False,
             text=True,
             capture_output=True,
         )
         if missing_extra.returncode != 2 or "eksiapi[mcp]" not in missing_extra.stderr:
-            raise SystemExit("Base eksi-mcp command did not explain the optional extra")
+            raise SystemExit(
+                "Base eksiapi mcp command did not explain the optional extra"
+            )
 
         run("uv", "venv", "--python", sys.executable, str(mcp), cwd=work)
         mcp_python = venv_python(mcp)
@@ -86,7 +88,8 @@ def main() -> int:
             "from eksiapi.mcp.server import mcp; assert mcp.name == 'eksi-sozluk'",
             cwd=work,
         )
-        run(str(console_script(mcp, "eksi-auth")), "--help", cwd=work)
+        run(str(console_script(mcp, "eksiapi")), "auth", "--help", cwd=work)
+        run(str(console_script(mcp, "eksiapi")), "mcp", "--help", cwd=work)
 
     print(f"Clean installation checks passed for {wheel.name}.")
     return 0

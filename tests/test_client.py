@@ -42,7 +42,7 @@ class FakeSession:
 
 
 def test_package_exposes_version() -> None:
-    assert __version__ == "1.3.0"
+    assert __version__ == "1.4.0"
 
 
 def test_client_sets_auth_and_timeout() -> None:
