@@ -35,7 +35,7 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
-# Secrets — never commit credentials
+# Secrets: never commit credentials
 .env
 *.env
 secrets.py

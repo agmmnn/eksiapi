@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-08-07
+
+### Added
+
+- 🩺 Tek `eksiapi` komutu altında `auth`, `mcp` ve canlı anonim API kontrolleri yapan kompakt `health` komutları eklendi.
+- 🟠 RSA kimlik doğrulaması, Local Vault oturumu ve mobil `User-Agent` desteği hazır gelen yayınlanabilir Postman koleksiyonu eklendi.
+- 📚 88 endpoint'i açıklamalar, örnekler, auth modları ve standart hata yanıtlarıyla kapsayan genişletilmiş OpenAPI sözleşmesi eklendi.
+
+### Changed
+
+- ⚡ Codex ve Claude Code MCP kurulumu, JSON düzenlemeden çalışan tek satırlık `uvx` komutlarına geçirildi.
+- 🧭 README; health kontrolü, MCP ekran görüntüsü, Postman başlangıç akışı ve public API dokümantasyonu bağlantısıyla güncellendi.
+- 🧹 Eski `eksi-auth` ve `eksi-mcp` komutları kaldırıldı; tüm CLI işlemleri artık `eksiapi` altında.
+
+### Fixed
+
+- 📱 Postman'ın varsayılan `PostmanRuntime` başlığı yerine API'nin beklediği `eksisozluk-android/144` mobil `User-Agent` başlığı otomatik uygulanıyor.
+
 ## [1.3.0] - 2026-08-07
 
 ### Added
@@ -61,7 +79,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Python 3.10–3.14 CI, coverage gate, clean wheel installation checks, and linting.
 - Trusted Publishing workflows for TestPyPI and PyPI, artifact attestations, and GitHub Releases.
 
-[Unreleased]: https://github.com/agmmnn/eksiapi/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/agmmnn/eksiapi/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/agmmnn/eksiapi/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/agmmnn/eksiapi/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/agmmnn/eksiapi/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/agmmnn/eksiapi/compare/v0.1.0...v1.1.0

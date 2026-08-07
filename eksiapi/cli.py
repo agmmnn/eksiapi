@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import argparse
 import sys
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 
 _OPTIONAL_MODULES = {"keyring", "mcp", "pydantic"}
 
@@ -27,16 +28,54 @@ def _load(command: str) -> Callable[[], int | None] | None:
     return main
 
 
-def run_auth() -> int:
-    """Run ``eksi-auth`` when the optional MCP dependencies are installed."""
+def _run_auth(argv: Sequence[str] | None = None) -> int:
+    """Run the credential command when optional MCP dependencies are installed."""
     main = _load("auth")
-    return 2 if main is None else int(main() or 0)
+    if main is None:
+        return 2
+    return int((main() if argv is None else main(argv)) or 0)
 
 
-def run_mcp() -> int:
-    """Run ``eksi-mcp`` when the optional MCP dependencies are installed."""
+def _run_mcp(argv: Sequence[str] | None = None) -> int:
+    """Run the MCP server when optional MCP dependencies are installed."""
     main = _load("mcp")
     if main is None:
         return 2
-    main()
+    if argv is None:
+        main()
+    else:
+        main(list(argv))
+    return 0
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """Run the unified ``eksiapi`` command."""
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    parser = argparse.ArgumentParser(
+        prog="eksiapi", description="Ekşi Sözlük API client and MCP server."
+    )
+    parser.add_argument("--version", action="store_true", help="Show package version")
+    subparsers = parser.add_subparsers(dest="command")
+    subparsers.add_parser("auth", help="Manage account credentials", add_help=False)
+    subparsers.add_parser("mcp", help="Run the local MCP server", add_help=False)
+    subparsers.add_parser(
+        "health", help="Test the API with anonymous reads", add_help=False
+    )
+
+    if arguments == ["--version"]:
+        from eksiapi import __version__
+
+        print(__version__)
+        return 0
+    if arguments and arguments[0] == "auth":
+        return _run_auth(arguments[1:])
+    if arguments and arguments[0] == "mcp":
+        return _run_mcp(arguments[1:])
+    if arguments and arguments[0] == "health":
+        from eksiapi.health import main as run_health
+
+        return run_health(arguments[1:])
+    if arguments:
+        parser.parse_args(arguments)
+    parser.print_help()
     return 0

@@ -4,7 +4,7 @@ import builtins
 
 import pytest
 
-from eksiapi.cli import _load, run_auth, run_mcp
+from eksiapi.cli import _load, _run_auth, _run_mcp, main
 
 
 def test_mcp_cli_explains_missing_optional_extra(monkeypatch, capsys) -> None:
@@ -17,20 +17,20 @@ def test_mcp_cli_explains_missing_optional_extra(monkeypatch, capsys) -> None:
 
     monkeypatch.setattr(builtins, "__import__", import_without_mcp)
 
-    assert run_mcp() == 2
+    assert _run_mcp() == 2
     assert "pip install 'eksiapi[mcp]'" in capsys.readouterr().err
 
 
 def test_auth_cli_delegates_to_optional_command(monkeypatch) -> None:
     monkeypatch.setattr("eksiapi.mcp.credentials.main", lambda: 7)
-    assert run_auth() == 7
+    assert _run_auth() == 7
 
 
 def test_mcp_cli_delegates_to_optional_command(monkeypatch) -> None:
     calls = []
     monkeypatch.setattr("eksiapi.mcp.server.main", lambda: calls.append("run"))
 
-    assert run_mcp() == 0
+    assert _run_mcp() == 0
     assert calls == ["run"]
 
 
@@ -46,3 +46,22 @@ def test_cli_does_not_hide_unrelated_import_errors(monkeypatch) -> None:
 
     with pytest.raises(ModuleNotFoundError, match="unrelated"):
         _load("mcp")
+
+
+def test_unified_cli_routes_subcommands(monkeypatch) -> None:
+    calls = []
+    monkeypatch.setattr(
+        "eksiapi.cli._run_auth", lambda argv: calls.append(("auth", argv)) or 0
+    )
+    monkeypatch.setattr(
+        "eksiapi.cli._run_mcp", lambda argv: calls.append(("mcp", argv)) or 0
+    )
+
+    assert main(["auth", "status"]) == 0
+    assert main(["mcp", "--mode", "interactive"]) == 0
+    assert calls == [("auth", ["status"]), ("mcp", ["--mode", "interactive"])]
+
+
+def test_unified_cli_prints_version(capsys) -> None:
+    assert main(["--version"]) == 0
+    assert capsys.readouterr().out.strip()

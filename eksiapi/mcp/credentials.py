@@ -1,4 +1,4 @@
-"""Credential loading and the interactive ``eksi-auth`` command."""
+"""Credential loading and the interactive ``eksiapi auth`` command."""
 
 from __future__ import annotations
 
@@ -150,7 +150,7 @@ def create_authenticated_client() -> EksiClient:
         stored = load_stored_credentials()
         if stored is None:
             raise CredentialError(
-                "No Ekşi credentials configured. Run `eksi-auth login` first."
+                "No Ekşi credentials configured. Run `eksiapi auth login` first."
             )
         username, password = stored.username, stored.password
 
@@ -196,7 +196,7 @@ def _login(username: str | None) -> int:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        prog="eksi-auth", description="Configure credentials for eksi-mcp."
+        prog="eksiapi auth", description="Configure credentials for eksiapi mcp."
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
     login_parser = subparsers.add_parser("login", help="Verify and store credentials")

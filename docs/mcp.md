@@ -1,10 +1,10 @@
 # MCP server guide
 
-`eksi-mcp` connects AI agents to Ekşi Sözlük over local stdio. It uses anonymous authentication for public research and never exposes credentials as tool inputs or results.
+`eksiapi mcp` connects AI agents to Ekşi Sözlük over local stdio. It uses anonymous authentication for public research and never exposes credentials as tool inputs or results.
 
 ## Install
 
-The recommended setup installs an isolated command:
+The client commands below use `uvx` and do not require a permanent installation. Install the isolated CLI only if you also want to run `eksiapi auth`, `eksiapi health` or `eksiapi mcp` directly:
 
 ```bash
 uv tool install "eksiapi[mcp]"
@@ -20,13 +20,42 @@ uv add "eksiapi[mcp]"
 
 ## Connect an MCP client
 
-JSON configuration:
+`uvx` downloads and runs the isolated MCP package on demand, so Codex and Claude Code do not require manual JSON editing or a separate package installation.
+
+### Codex and ChatGPT Desktop
+
+```bash
+codex mcp add eksiapi -- uvx --from "eksiapi[mcp]" eksiapi mcp
+```
+
+```bash
+codex mcp get eksiapi
+codex mcp remove eksiapi
+```
+
+Codex CLI, the Codex app and ChatGPT Desktop share the same Codex MCP configuration. Restart the desktop app or open a new task if the tools do not appear immediately.
+
+### Claude Code
+
+```bash
+claude mcp add eksiapi --scope user -- uvx --from "eksiapi[mcp]" eksiapi mcp
+```
+
+```bash
+claude mcp get eksiapi
+claude mcp remove eksiapi --scope user
+```
+
+The `user` scope makes the server available across Claude Code projects.
+
+### Generic stdio clients
 
 ```json
 {
   "mcpServers": {
     "eksi": {
-      "command": "eksi-mcp"
+      "command": "uvx",
+      "args": ["--from", "eksiapi[mcp]", "eksiapi", "mcp"]
     }
   }
 }
@@ -36,8 +65,11 @@ Equivalent TOML:
 
 ```toml
 [mcp_servers.eksi]
-command = "eksi-mcp"
+command = "uvx"
+args = ["--from", "eksiapi[mcp]", "eksiapi", "mcp"]
 ```
+
+If the package was installed with `uv tool install "eksiapi[mcp]"`, use `eksiapi` as the command and `["mcp"]` as its arguments instead.
 
 For a source checkout:
 
@@ -50,7 +82,8 @@ For a source checkout:
     "run",
     "--extra",
     "mcp",
-    "eksi-mcp"
+    "eksiapi",
+    "mcp"
   ]
 }
 ```
@@ -62,7 +95,7 @@ For a source checkout:
 This is the default. With no credentials configured, the server automatically uses an anonymous token and exposes public research tools.
 
 ```bash
-eksi-mcp
+eksiapi mcp
 ```
 
 ### Interactive
@@ -70,8 +103,8 @@ eksi-mcp
 Interactive mode adds account-write tools. It requires a logged-in account and an MCP client that supports elicitation.
 
 ```bash
-eksi-auth login
-eksi-mcp --mode interactive
+eksiapi auth login
+eksiapi mcp --mode interactive
 ```
 
 Each write is a two-step flow:
@@ -86,22 +119,22 @@ The approval parameter is not present in the model-visible tool schema. A model 
 No setup is required for anonymous research. For account reads or interactive writes, the OS keychain flow is recommended:
 
 ```bash
-eksi-auth login
-eksi-auth status
-eksi-auth logout
+eksiapi auth login
+eksiapi auth status
+eksiapi auth logout
 ```
 
 Environment variables take precedence:
 
 ```bash
 # Start with username/password login
-EKSI_USERNAME=... EKSI_PASSWORD=... eksi-mcp
+EKSI_USERNAME=... EKSI_PASSWORD=... eksiapi mcp
 
 # Reuse a session; EKSI_NICK lets account-summary resolve the profile
 EKSI_ACCESS_TOKEN=... \
 EKSI_CLIENT_SECRET=... \
 EKSI_NICK=... \
-eksi-mcp
+eksiapi mcp
 ```
 
 Optional refresh/runtime metadata:
