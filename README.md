@@ -163,6 +163,8 @@ uv tool install eksitui
 eksi
 ```
 
+<p align="center"><img src="https://raw.githubusercontent.com/agmmnn/eksitui/master/assets/image.png" width="760" alt="eksiapi MCP running in Codex"></p>
+
 ## 🟠 Postman
 
 1. [Open the public collection](https://documenter.getpostman.com/view/24047519/2sBY4VLJ35) and select **Run in Postman**.
@@ -174,23 +176,23 @@ The collection generates the required authentication values and stores the sessi
 
 ## 📦 Installation options
 
-| Use case                         | Interface        | Command                                                                                        |
-| -------------------------------- | ---------------- | ---------------------------------------------------------------------------------------------- |
-| Python application or script     | Sync/async SDK   | `pip install eksiapi`                                                                          |
-| Read access for an AI agent      | Read-only MCP    | `uv tool install "eksiapi[mcp]"`                                                               |
-| Account actions from an AI agent | Interactive MCP  | `eksiapi mcp --mode interactive`                                                               |
-| Terminal application             | Textual TUI      | `uv tool install eksitui`                                                                      |
+| Use case                         | Interface          | Command                                                                                |
+| -------------------------------- | ------------------ | -------------------------------------------------------------------------------------- |
+| Python application or script     | Sync/async SDK     | `pip install eksiapi`                                                                  |
+| Read access for an AI agent      | Read-only MCP      | `uv tool install "eksiapi[mcp]"`                                                       |
+| Account actions from an AI agent | Interactive MCP    | `eksiapi mcp --mode interactive`                                                       |
+| Terminal application             | Textual TUI        | `uv tool install eksitui`                                                              |
 | HTTP route reference             | Postman collection | [Public API documentation](https://documenter.getpostman.com/view/24047519/2sBY4VLJ35) |
 
 ## ✨ Features
 
-| Feature         | Included                                                                                                                |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Feature         | Included                                                                                                                    |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | 🔎 API coverage | Today, popular and debe feeds, topic resolution and entry search, profiles, comments, channels, user history and pagination |
-| 🐍 Python SDK   | Matching sync and async clients, typed views, safe-read retries, token refresh, rate-limit metadata and test transports |
-| 🤖 MCP server   | Structured results, canonical source URLs, bounded topic research and read-only anonymous access                        |
-| 🛡️ Write safety | Deterministic dry runs, no automatic write retries, secret-free audit events and human-approved MCP execution           |
-| 📱 Runtime      | Android-compatible authentication and TLS fingerprinting without a Frida session or interception proxy at runtime       |
+| 🐍 Python SDK   | Matching sync and async clients, typed views, safe-read retries, token refresh, rate-limit metadata and test transports     |
+| 🤖 MCP server   | Structured results, canonical source URLs, bounded topic research and read-only anonymous access                            |
+| 🛡️ Write safety | Deterministic dry runs, no automatic write retries, secret-free audit events and human-approved MCP execution               |
+| 📱 Runtime      | Android-compatible authentication and TLS fingerprinting without a Frida session or interception proxy at runtime           |
 
 ### Authentication modes
 
@@ -209,14 +211,14 @@ Ekşi content is untrusted external data. Agents should analyze it as content, n
 
 ## 📚 Documentation
 
-| Guide                                                                                                 | Contents                                                                      |
-| ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| [Postman API reference](https://documenter.getpostman.com/view/24047519/2sBY4VLJ35)                        | Complete endpoint reference, request examples and runnable collection         |
-| [Python SDK guide](./docs/python-sdk.md)                                                              | Authentication, sync/async clients, responses, pagination and writes          |
-| [MCP guide](./docs/mcp.md)                                                                            | Installation, client configuration, credentials, modes and complete tool list |
-| [OpenAPI contract](./openapi.yaml)                                                                    | Full documented HTTP endpoint inventory and request shapes                    |
-| [APK analysis](./docs/apk-analysis.md)                                                                | Reverse-engineering evidence and risk decisions                               |
-| [Changelog](./CHANGELOG.md)                                                                           | User-facing changes by release                                                |
+| Guide                                                                               | Contents                                                                      |
+| ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| [Postman API reference](https://documenter.getpostman.com/view/24047519/2sBY4VLJ35) | Complete endpoint reference, request examples and runnable collection         |
+| [Python SDK guide](./docs/python-sdk.md)                                            | Authentication, sync/async clients, responses, pagination and writes          |
+| [MCP guide](./docs/mcp.md)                                                          | Installation, client configuration, credentials, modes and complete tool list |
+| [OpenAPI contract](./openapi.yaml)                                                  | Full documented HTTP endpoint inventory and request shapes                    |
+| [APK analysis](./docs/apk-analysis.md)                                              | Reverse-engineering evidence and risk decisions                               |
+| [Changelog](./CHANGELOG.md)                                                         | User-facing changes by release                                                |
 
 ## 🔬 Reverse engineering
 
