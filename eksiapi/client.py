@@ -28,6 +28,7 @@ from .models import (
     Page,
     RateLimitInfo,
     TokenInfo,
+    Topic,
     User,
     WritePreview,
     WriteResult,
@@ -59,6 +60,19 @@ def _positive(value: int, label: str) -> int:
     if value <= 0:
         raise ValueError(f"{label} must be greater than zero")
     return value
+
+
+def _topic_id_from_query(payload: Any) -> int:
+    """Extract a topic id from raw or unwrapped topic-query responses."""
+    current = payload
+    if isinstance(current, Mapping) and isinstance(current.get("Data"), Mapping):
+        current = current["Data"]
+    if isinstance(current, Mapping) and isinstance(current.get("QueryData"), Mapping):
+        current = current["QueryData"]
+    value = current.get("TopicId") if isinstance(current, Mapping) else None
+    if not isinstance(value, int | str) or not str(value).isdigit():
+        raise EksiApiError("Ekşi API could not resolve the requested topic")
+    return int(value)
 
 
 class EksiClient:
@@ -404,14 +418,55 @@ class EksiClient:
         payload = ApiResponse.from_payload(self.entry(entry_id)).data
         return Entry.from_mapping(payload if isinstance(payload, Mapping) else {})
 
-    def topic_entries(self, topic_slug: str, page: int = 1) -> Any:
+    def query_topic(self, term: str) -> Any:
+        """Resolve a title, slug or URL-like term using the app's topic router."""
         return self._get(
-            "/v2/entry/entriesbytopic",
-            params={
-                "title": _required_text(topic_slug, "topic_slug", maximum=200),
-                "p": page,
-            },
+            "/v2/topic/query/",
+            params={"term": _required_text(term, "term", maximum=500)},
         )
+
+    def resolve_topic_id(self, term: str) -> int:
+        """Resolve a title or slug directly to a numeric topic id."""
+        return _topic_id_from_query(self.query_topic(term))
+
+    def topic(
+        self,
+        topic_id: int,
+        page: int = 1,
+        *,
+        action: Literal["popular", "today"] | None = None,
+    ) -> Any:
+        """Read a topic page, optionally filtered to popular or today's entries."""
+        topic_id = _positive(topic_id, "topic_id")
+        path = f"/v2/topic/{topic_id}"
+        if action is not None:
+            path += f"/{action}"
+        return self._get(path, params={"p": _positive(page, "page")})
+
+    def topic_typed(
+        self,
+        topic_id: int,
+        page: int = 1,
+        *,
+        action: Literal["popular", "today"] | None = None,
+    ) -> Topic:
+        payload = ApiResponse.from_payload(
+            self.topic(topic_id, page, action=action)
+        ).data
+        return Topic.from_mapping(payload if isinstance(payload, Mapping) else {})
+
+    def topic_entries(self, topic: int | str, page: int = 1) -> Any:
+        """Read entries by numeric topic id or resolve a title/slug first."""
+        topic_id = topic if isinstance(topic, int) else self.resolve_topic_id(topic)
+        return self.topic(_positive(topic_id, "topic"), page=page)
+
+    def topic_popular(self, topic_id: int, page: int = 1) -> Any:
+        """Read a topic's popular entries."""
+        return self.topic(topic_id, page=page, action="popular")
+
+    def topic_today(self, topic_id: int, page: int = 1) -> Any:
+        """Read entries added to a topic today."""
+        return self.topic(topic_id, page=page, action="today")
 
     def user_entries(self, nick: str, page: int = 1) -> Any:
         nick = quote(_required_text(nick, "nick", maximum=60), safe="")
@@ -425,10 +480,11 @@ class EksiClient:
         return Page.from_payload(payload, page=page)
 
     def iter_topic_entries(
-        self, topic_slug: str, *, start_page: int = 1, max_pages: int | None = None
+        self, topic: int | str, *, start_page: int = 1, max_pages: int | None = None
     ) -> Iterator[Any]:
+        topic_id = topic if isinstance(topic, int) else self.resolve_topic_id(topic)
         yield from self._iterate_pages(
-            lambda page: self.topic_entries(topic_slug, page=page),
+            lambda page: self.topic(topic_id, page=page),
             start_page,
             max_pages,
         )
@@ -465,33 +521,95 @@ class EksiClient:
         return self._get("/v2/index/today", params={"p": page})
 
     def agenda(self, page: int = 1) -> Any:
-        return self._get("/v2/entry/agenda", params={"p": page})
+        """Return the account-only olay/agenda feed."""
+        return self._get("/v2/index/olay/", params={"p": _positive(page, "page")})
 
     def filter_channels(self) -> Any:
         return self._get("/v2/index/getfilterchannels")
 
-    def search_topics(self, query: str, page: int = 1) -> Any:
-        return self._get(
-            "/v2/topic/search",
-            params={
-                "searchTerm": _required_text(query, "query", maximum=200),
-                "p": page,
+    def debe(self, page: int = 1) -> Any:
+        """Return yesterday's most-liked entries feed."""
+        return self._get("/v2/index/debe/", params={"p": _positive(page, "page")})
+
+    def feed(
+        self,
+        kind: Literal["today", "popular", "debe", "agenda"],
+        page: int = 1,
+        *,
+        channel_filters: list[str] | None = None,
+    ) -> Any:
+        """Read a named feed through one adapter-friendly method."""
+        if kind == "popular":
+            return self.popular(page=page, channel_filters=channel_filters)
+        if channel_filters:
+            raise ValueError("channel_filters can only be used with the popular feed")
+        if kind == "today":
+            return self.today(page=page)
+        if kind == "debe":
+            return self.debe(page=page)
+        return self.agenda(page=page)
+
+    def search_topics(
+        self,
+        query: str,
+        page: int = 1,
+        *,
+        sort_order: int = 1,
+        favorited_only: bool = False,
+        nice_only: bool = False,
+    ) -> Any:
+        """Search topic titles through the Android app's index search."""
+        return self._post(
+            "/v2/index/search/",
+            params={"p": _positive(page, "page")},
+            json_body={
+                "Keywords": _required_text(query, "query", maximum=200),
+                "SortOrder": sort_order,
+                "FavoritedOnly": favorited_only,
+                "NiceOnly": nice_only,
             },
+            retryable=True,
         )
 
     def autocomplete(self, query: str) -> Any:
-        return self._get(
-            "/v2/topic/autocomplete",
-            params={"searchTerm": _required_text(query, "query", maximum=200)},
+        """Return title, query and nick suggestions for a partial term."""
+        return self._post(
+            "/v2/autocomplete/query",
+            form_body={"Term": _required_text(query, "query", maximum=200)},
+            retryable=True,
         )
 
-    def search_entries(self, query: str, page: int = 1) -> Any:
-        return self._get(
-            "/v2/entry/search",
-            params={
-                "searchTerm": _required_text(query, "query", maximum=200),
-                "p": page,
+    def autocomplete_nicks(self, query: str) -> Any:
+        """Return nick suggestions for a partial term."""
+        return self._post(
+            "/v2/autocomplete/nick",
+            form_body={"Term": _required_text(query, "query", maximum=200)},
+            retryable=True,
+        )
+
+    def search_entries(self, topic_id: int, query: str, page: int = 1) -> Any:
+        """Search entry bodies inside one topic."""
+        return self._post(
+            "/v2/topic/search",
+            params={"p": _positive(page, "page")},
+            json_body={
+                "TopicId": _positive(topic_id, "topic_id"),
+                "Keywords": _required_text(query, "query", maximum=200),
             },
+            retryable=True,
+        )
+
+    def search_entries_advanced(
+        self, topic_id: int, filters: Mapping[str, Any], page: int = 1
+    ) -> Any:
+        """Run the app's advanced entry search inside one topic."""
+        body = dict(filters)
+        body["TopicId"] = _positive(topic_id, "topic_id")
+        return self._post(
+            "/v2/topic/search/advanced",
+            params={"p": _positive(page, "page")},
+            json_body=body,
+            retryable=True,
         )
 
     def notification_count(self) -> Any:

@@ -43,7 +43,7 @@ def test_readonly_is_default_and_interactive_hides_approval_parameter() -> None:
             create_server(lambda: WriteClient(), min_interval=0)
         ) as client:
             tools = (await client.list_tools()).tools
-            assert len(tools) == 11
+            assert len(tools) == 13
             assert all(tool.annotations.read_only_hint for tool in tools)
 
         server = create_server(
@@ -51,7 +51,7 @@ def test_readonly_is_default_and_interactive_hides_approval_parameter() -> None:
         )
         async with Client(server) as client:
             tools = {tool.name: tool for tool in (await client.list_tools()).tools}
-            assert len(tools) == 23
+            assert len(tools) == 25
             assert "eksi_publish_entry" in tools
             schema = tools["eksi_publish_entry"].input_schema
             assert set(schema["properties"]) == {"preview_token"}

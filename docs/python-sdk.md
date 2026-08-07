@@ -70,7 +70,7 @@ with EksiClient.anonymous(raw_response=False) as eksi:
     data = eksi.entry(1)
 ```
 
-Typed helpers include `entry_typed()`, `me_typed()` and `page()`. Existing dictionary-returning methods remain available.
+Typed helpers include `entry_typed()`, `topic_typed()`, `me_typed()` and `page()`. Existing dictionary-returning methods remain available.
 
 ## Common reads
 
@@ -78,13 +78,20 @@ Typed helpers include `entry_typed()`, `me_typed()` and `page()`. Existing dicti
 # Feeds and search
 eksi.today(page=1)
 eksi.popular(page=1)
-eksi.agenda(page=1)
+eksi.agenda(page=1)  # logged-in accounts
+eksi.debe(page=1)
+eksi.feed("today", page=1)
 eksi.search_topics("python", page=1)
-eksi.search_entries("python", page=1)
+eksi.autocomplete("pyth")
 
 # Topics, entries and comments
 eksi.entry(1)
+result = eksi.query_topic("python")
+eksi.topic(109286, page=1)
+eksi.topic(109286, page=1, action="popular")
 eksi.topic_entries("python", page=1)
+eksi.search_entries(109286, "asyncio", page=1)
+eksi.search_entries_advanced(109286, {"Author": "ssg"}, page=1)
 eksi.comments(1, page=1, size=20)
 eksi.entry_likes(1)
 eksi.entry_favorites(1)
@@ -105,12 +112,25 @@ eksi.trash(page=1)
 
 See [`openapi.yaml`](../openapi.yaml) for the complete documented route inventory and request shapes.
 
+## Application and TUI adapters
+
+The high-level read methods keep application adapters small. `feed()` handles named lists, `resolve_topic_id()` turns a title or slug into an ID, `topic()` reads a numeric topic and `entry()` reads a numeric entry.
+
+```python
+topics = eksi.feed("today", page=1)
+topic_id = eksi.resolve_topic_id("python")
+topic = eksi.topic(topic_id, page=1)
+entry = eksi.entry(1)
+```
+
+`topic_entries()` accepts either a numeric ID or a title/slug. Passing a title performs topic resolution once before reading the requested page, and the pagination iterator reuses the resolved ID across pages.
+
 ## Pagination
 
 Use a typed page view when you want metadata:
 
 ```python
-payload = eksi.topic_entries("python", page=1)
+payload = eksi.topic_entries(109286, page=1)
 page = eksi.page(payload)
 print(page.items, page.has_more)
 ```
@@ -118,7 +138,7 @@ print(page.items, page.has_more)
 Or stream bounded pages:
 
 ```python
-for entry in eksi.iter_topic_entries("python", max_pages=3):
+for entry in eksi.iter_topic_entries(109286, max_pages=3):
     print(entry)
 ```
 

@@ -59,7 +59,7 @@ def test_openapi_is_valid_and_ready_for_public_docs() -> None:
 
     all_operations = list(operations(spec))
     operation_ids = [operation["operationId"] for _, _, operation in all_operations]
-    assert len(all_operations) == 88
+    assert len(all_operations) == 93
     assert len(operation_ids) == len(set(operation_ids))
 
     for path, _, operation in all_operations:
@@ -102,7 +102,7 @@ def test_generated_postman_collection_matches_openapi() -> None:
             for header in item["request"].get("header", [])
         )
     ]
-    assert len(client_secret_paths) == 88
+    assert len(client_secret_paths) == 93
     assert "/v2/clientsettings/time" not in client_secret_paths
 
     authentication = next(

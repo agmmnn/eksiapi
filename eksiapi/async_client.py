@@ -11,7 +11,13 @@ from urllib.parse import quote
 from curl_cffi import requests
 
 from .auth import generate_api_secret
-from .client import BASE, DEFAULT_FINGERPRINT, _positive, _required_text
+from .client import (
+    BASE,
+    DEFAULT_FINGERPRINT,
+    _positive,
+    _required_text,
+    _topic_id_from_query,
+)
 from .config import AndroidFingerprint
 from .errors import EksiApiError, EksiAuthenticationError, EksiTransportError
 from .formatting import unwrap_response
@@ -22,6 +28,7 @@ from .models import (
     Page,
     RateLimitInfo,
     TokenInfo,
+    Topic,
     User,
     WritePreview,
     WriteResult,
@@ -359,14 +366,57 @@ class AsyncEksiClient:
         payload = ApiResponse.from_payload(await self.entry(entry_id)).data
         return Entry.from_mapping(payload if isinstance(payload, Mapping) else {})
 
-    async def topic_entries(self, topic_slug: str, page: int = 1) -> Any:
+    async def query_topic(self, term: str) -> Any:
+        """Resolve a title, slug or URL-like term using the app's topic router."""
         return await self._get(
-            "/v2/entry/entriesbytopic",
-            params={
-                "title": _required_text(topic_slug, "topic_slug", maximum=200),
-                "p": page,
-            },
+            "/v2/topic/query/",
+            params={"term": _required_text(term, "term", maximum=500)},
         )
+
+    async def resolve_topic_id(self, term: str) -> int:
+        """Resolve a title or slug directly to a numeric topic id."""
+        return _topic_id_from_query(await self.query_topic(term))
+
+    async def topic(
+        self,
+        topic_id: int,
+        page: int = 1,
+        *,
+        action: Literal["popular", "today"] | None = None,
+    ) -> Any:
+        """Read a topic page, optionally filtered to popular or today's entries."""
+        topic_id = _positive(topic_id, "topic_id")
+        path = f"/v2/topic/{topic_id}"
+        if action is not None:
+            path += f"/{action}"
+        return await self._get(path, params={"p": _positive(page, "page")})
+
+    async def topic_typed(
+        self,
+        topic_id: int,
+        page: int = 1,
+        *,
+        action: Literal["popular", "today"] | None = None,
+    ) -> Topic:
+        payload = ApiResponse.from_payload(
+            await self.topic(topic_id, page, action=action)
+        ).data
+        return Topic.from_mapping(payload if isinstance(payload, Mapping) else {})
+
+    async def topic_entries(self, topic: int | str, page: int = 1) -> Any:
+        """Read entries by numeric topic id or resolve a title/slug first."""
+        topic_id = (
+            topic if isinstance(topic, int) else await self.resolve_topic_id(topic)
+        )
+        return await self.topic(_positive(topic_id, "topic"), page=page)
+
+    async def topic_popular(self, topic_id: int, page: int = 1) -> Any:
+        """Read a topic's popular entries."""
+        return await self.topic(topic_id, page=page, action="popular")
+
+    async def topic_today(self, topic_id: int, page: int = 1) -> Any:
+        """Read entries added to a topic today."""
+        return await self.topic(topic_id, page=page, action="today")
 
     async def user_entries(self, nick: str, page: int = 1) -> Any:
         nick = quote(_required_text(nick, "nick", maximum=60), safe="")
@@ -381,14 +431,15 @@ class AsyncEksiClient:
         return Page.from_payload(payload, page=page)
 
     async def iter_topic_entries(
-        self, topic_slug: str, *, start_page: int = 1, max_pages: int | None = None
+        self, topic: int | str, *, start_page: int = 1, max_pages: int | None = None
     ) -> AsyncIterator[Any]:
+        topic_id = (
+            topic if isinstance(topic, int) else await self.resolve_topic_id(topic)
+        )
         current = _positive(start_page, "start_page")
         fetched = 0
         while max_pages is None or fetched < max_pages:
-            page = Page.from_payload(
-                await self.topic_entries(topic_slug, current), page=current
-            )
+            page = Page.from_payload(await self.topic(topic_id, current), page=current)
             for item in page.items:
                 yield item
             fetched += 1
@@ -426,33 +477,95 @@ class AsyncEksiClient:
         return await self._get("/v2/index/today", params={"p": page})
 
     async def agenda(self, page: int = 1) -> Any:
-        return await self._get("/v2/entry/agenda", params={"p": page})
+        """Return the account-only olay/agenda feed."""
+        return await self._get("/v2/index/olay/", params={"p": _positive(page, "page")})
 
     async def filter_channels(self) -> Any:
         return await self._get("/v2/index/getfilterchannels")
 
-    async def search_topics(self, query: str, page: int = 1) -> Any:
-        return await self._get(
-            "/v2/topic/search",
-            params={
-                "searchTerm": _required_text(query, "query", maximum=200),
-                "p": page,
+    async def debe(self, page: int = 1) -> Any:
+        """Return yesterday's most-liked entries feed."""
+        return await self._get("/v2/index/debe/", params={"p": _positive(page, "page")})
+
+    async def feed(
+        self,
+        kind: Literal["today", "popular", "debe", "agenda"],
+        page: int = 1,
+        *,
+        channel_filters: list[str] | None = None,
+    ) -> Any:
+        """Read a named feed through one adapter-friendly method."""
+        if kind == "popular":
+            return await self.popular(page=page, channel_filters=channel_filters)
+        if channel_filters:
+            raise ValueError("channel_filters can only be used with the popular feed")
+        if kind == "today":
+            return await self.today(page=page)
+        if kind == "debe":
+            return await self.debe(page=page)
+        return await self.agenda(page=page)
+
+    async def search_topics(
+        self,
+        query: str,
+        page: int = 1,
+        *,
+        sort_order: int = 1,
+        favorited_only: bool = False,
+        nice_only: bool = False,
+    ) -> Any:
+        """Search topic titles through the Android app's index search."""
+        return await self._post(
+            "/v2/index/search/",
+            params={"p": _positive(page, "page")},
+            json_body={
+                "Keywords": _required_text(query, "query", maximum=200),
+                "SortOrder": sort_order,
+                "FavoritedOnly": favorited_only,
+                "NiceOnly": nice_only,
             },
+            retryable=True,
         )
 
-    async def search_entries(self, query: str, page: int = 1) -> Any:
-        return await self._get(
-            "/v2/entry/search",
-            params={
-                "searchTerm": _required_text(query, "query", maximum=200),
-                "p": page,
+    async def search_entries(self, topic_id: int, query: str, page: int = 1) -> Any:
+        """Search entry bodies inside one topic."""
+        return await self._post(
+            "/v2/topic/search",
+            params={"p": _positive(page, "page")},
+            json_body={
+                "TopicId": _positive(topic_id, "topic_id"),
+                "Keywords": _required_text(query, "query", maximum=200),
             },
+            retryable=True,
+        )
+
+    async def search_entries_advanced(
+        self, topic_id: int, filters: Mapping[str, Any], page: int = 1
+    ) -> Any:
+        """Run the app's advanced entry search inside one topic."""
+        body = dict(filters)
+        body["TopicId"] = _positive(topic_id, "topic_id")
+        return await self._post(
+            "/v2/topic/search/advanced",
+            params={"p": _positive(page, "page")},
+            json_body=body,
+            retryable=True,
         )
 
     async def autocomplete(self, query: str) -> Any:
-        return await self._get(
-            "/v2/topic/autocomplete",
-            params={"searchTerm": _required_text(query, "query", maximum=200)},
+        """Return title, query and nick suggestions for a partial term."""
+        return await self._post(
+            "/v2/autocomplete/query",
+            form_body={"Term": _required_text(query, "query", maximum=200)},
+            retryable=True,
+        )
+
+    async def autocomplete_nicks(self, query: str) -> Any:
+        """Return nick suggestions for a partial term."""
+        return await self._post(
+            "/v2/autocomplete/nick",
+            form_body={"Term": _required_text(query, "query", maximum=200)},
+            retryable=True,
         )
 
     async def notification_count(self) -> Any:

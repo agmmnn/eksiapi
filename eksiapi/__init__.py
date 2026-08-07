@@ -11,7 +11,7 @@ from .errors import (
     EksiRateLimitError,
     EksiTransportError,
 )
-from .models import Entry, Page, RateLimitInfo, User, WritePreview, WriteResult
+from .models import Entry, Page, RateLimitInfo, Topic, User, WritePreview, WriteResult
 from .transport import AsyncMockSession, MockResponse, MockSession, RetryPolicy
 
 try:
@@ -35,6 +35,7 @@ __all__ = [
     "Page",
     "RateLimitInfo",
     "RetryPolicy",
+    "Topic",
     "User",
     "WritePreview",
     "WriteResult",

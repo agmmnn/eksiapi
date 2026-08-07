@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-08-07
+
+### Added
+
+- 🧭 Başlık terimlerini numeric topic ID'lerine çözen `query_topic`, doğrudan topic sayfalarını okuyan `topic` ve typed `Topic` modeli eklendi.
+- 🔎 Global başlık araması, topic içi basit ve gelişmiş entry araması, query/nick autocomplete ve canlı debe akışı sync/async SDK'ya eklendi.
+- 🖥️ TUI ve diğer adaptörlerin `today`, `popular`, `debe` ve hesap oturumlu `agenda` akışlarını tek girişten çağırabilmesi için `feed()` eklendi.
+- 🤖 MCP'ye topic çözümleme ve autocomplete araçları eklendi; feed aracı debe desteği kazandı.
+
+### Fixed
+
+- 🛠️ Çalışmayan varsayımsal topic, entry search ve autocomplete rotaları APK 2.4.10 Retrofit sözleşmeleri ve canlı anonim testlerle doğrulanan rotalarla değiştirildi.
+- 🗞️ `agenda()` gerçek `/v2/index/olay/` rotasına taşındı ve bu akışın hesap oturumu gerektirdiği belgelendi.
+- 📚 OpenAPI ve Postman koleksiyonu yeni doğrulanmış endpoint yapısıyla eşitlendi.
+
 ## [1.4.0] - 2026-08-07
 
 ### Added
@@ -79,7 +94,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Python 3.10–3.14 CI, coverage gate, clean wheel installation checks, and linting.
 - Trusted Publishing workflows for TestPyPI and PyPI, artifact attestations, and GitHub Releases.
 
-[Unreleased]: https://github.com/agmmnn/eksiapi/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/agmmnn/eksiapi/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/agmmnn/eksiapi/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/agmmnn/eksiapi/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/agmmnn/eksiapi/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/agmmnn/eksiapi/compare/v1.1.0...v1.2.0

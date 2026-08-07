@@ -42,7 +42,7 @@ class FakeSession:
 
 
 def test_package_exposes_version() -> None:
-    assert __version__ == "1.4.0"
+    assert __version__ == "1.5.0"
 
 
 def test_client_sets_auth_and_timeout() -> None:
@@ -292,16 +292,18 @@ def test_endpoint_helpers_build_expected_requests() -> None:
     methods = [
         ("is_developer", (), {}),
         ("entry", (42,), {}),
-        ("topic_entries", ("python",), {"page": 2}),
+        ("topic_entries", (109286,), {"page": 2}),
         ("user_entries", ("alice/bob",), {"page": 3}),
         ("user_favorites", ("alice",), {"page": 4}),
         ("popular", (), {"page": 5}),
         ("today", (), {"page": 6}),
         ("agenda", (), {"page": 7}),
         ("filter_channels", (), {}),
+        ("debe", (), {"page": 1}),
         ("search_topics", ("python",), {"page": 8}),
         ("autocomplete", ("py",), {}),
-        ("search_entries", ("python",), {"page": 9}),
+        ("autocomplete_nicks", ("py",), {}),
+        ("search_entries", (109286, "python"), {"page": 9}),
         ("notification_count", (), {}),
         ("notifications", (), {"page": 10}),
         ("unread_topic_count", (), {}),
@@ -320,6 +322,8 @@ def test_endpoint_helpers_build_expected_requests() -> None:
     assert len(session.calls) == len(methods)
     assert "%2F" in session.calls[3][1]
     assert session.calls[5][2]["json"] == {"Filters": []}
+    assert session.calls[10][0] == "POST"
+    assert session.calls[10][2]["json"]["Keywords"] == "python"
 
 
 def test_post_supports_form_body() -> None:

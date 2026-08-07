@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import inspect
 import json
 from pathlib import Path
 
@@ -16,9 +17,23 @@ from eksiapi import (
     MockSession,
     RetryPolicy,
 )
-from eksiapi.models import Entry, WritePreview
+from eksiapi.models import Entry, Topic, WritePreview
 
 FIXTURES = Path(__file__).parent / "fixtures" / "apk-2.4.10"
+
+
+def test_sync_and_async_public_method_names_match() -> None:
+    sync_methods = {
+        name
+        for name, value in inspect.getmembers(EksiClient, inspect.isfunction)
+        if not name.startswith("_")
+    }
+    async_methods = {
+        name
+        for name, value in inspect.getmembers(AsyncEksiClient, inspect.isfunction)
+        if not name.startswith("_")
+    }
+    assert sync_methods == async_methods
 
 
 def test_safe_get_retries_and_write_never_retries() -> None:
@@ -113,7 +128,7 @@ def test_pagination_iterator_and_write_preview_audit() -> None:
     )
     audits = []
     client = EksiClient(session=session, audit_sink=audits.append)
-    assert [item["EntryId"] for item in client.iter_topic_entries("python")] == [1, 2]
+    assert [item["EntryId"] for item in client.iter_topic_entries(109286)] == [1, 2]
 
     preview = client.create_entry("başlık", "içerik", dry_run=True)
     assert isinstance(preview, WritePreview)
@@ -123,6 +138,96 @@ def test_pagination_iterator_and_write_preview_audit() -> None:
     assert result.success is True
     assert audits[0].operation == "create_entry"
     assert not hasattr(audits[0], "access_token")
+
+
+def test_verified_topic_helpers_and_typed_topic() -> None:
+    session = MockSession(
+        [
+            MockResponse(200, {"Data": {"QueryData": {"TopicId": 109286}}}),
+            MockResponse(
+                200,
+                {
+                    "Data": {
+                        "Id": 109286,
+                        "Title": "python",
+                        "Slug": "python",
+                        "Entries": [{"Id": 1, "Content": "hello"}],
+                        "PageIndex": 1,
+                        "PageCount": 2,
+                    }
+                },
+            ),
+            MockResponse(200, {"Data": {"Id": 109286}}),
+            MockResponse(200, {"Data": {"Id": 109286}}),
+        ]
+    )
+    client = EksiClient(session=session)
+
+    assert client.resolve_topic_id("python") == 109286
+    topic = client.topic_typed(109286)
+    assert isinstance(topic, Topic)
+    assert topic.title == "python"
+    assert topic.entries[0].id == 1
+    client.topic_popular(109286)
+    client.topic_today(109286)
+
+    assert session.calls[0][1].endswith("/v2/topic/query/")
+    assert session.calls[1][1].endswith("/v2/topic/109286")
+    assert session.calls[2][1].endswith("/v2/topic/109286/popular")
+    assert session.calls[3][1].endswith("/v2/topic/109286/today")
+
+
+def test_verified_search_and_autocomplete_request_contracts() -> None:
+    session = MockSession([MockResponse(200, {}) for _ in range(5)])
+    client = EksiClient(session=session)
+
+    client.search_topics("python", page=2, nice_only=True)
+    client.search_entries(109286, "asyncio", page=3)
+    client.search_entries_advanced(109286, {"Author": "ssg"}, page=4)
+    client.autocomplete("pyth")
+    client.autocomplete_nicks("ss")
+
+    assert session.calls[0][0] == "POST"
+    assert session.calls[0][1].endswith("/v2/index/search/")
+    assert session.calls[0][2]["json"] == {
+        "Keywords": "python",
+        "SortOrder": 1,
+        "FavoritedOnly": False,
+        "NiceOnly": True,
+    }
+    assert session.calls[1][2]["json"] == {"TopicId": 109286, "Keywords": "asyncio"}
+    assert session.calls[2][2]["json"] == {"Author": "ssg", "TopicId": 109286}
+    assert session.calls[3][2]["data"] == {"Term": "pyth"}
+    assert session.calls[4][2]["data"] == {"Term": "ss"}
+
+
+def test_unified_feed_routes_and_rejects_misplaced_filters() -> None:
+    session = MockSession([MockResponse(200, {}) for _ in range(4)])
+    client = EksiClient(session=session)
+
+    client.feed("today", page=2)
+    client.feed("popular", page=3, channel_filters=["spor"])
+    client.feed("debe", page=4)
+    client.feed("agenda", page=5)
+
+    assert session.calls[0][1].endswith("/v2/index/today")
+    assert session.calls[1][2]["json"] == {"Filters": ["spor"]}
+    assert session.calls[2][1].endswith("/v2/index/debe/")
+    assert session.calls[3][1].endswith("/v2/index/olay/")
+    with pytest.raises(ValueError, match="popular"):
+        client.feed("today", channel_filters=["spor"])
+
+
+def test_async_unified_feed_matches_sync_routes() -> None:
+    async def run() -> None:
+        session = AsyncMockSession([MockResponse(200, {}) for _ in range(2)])
+        client = AsyncEksiClient(session=session)
+        await client.feed("today", page=2)
+        await client.feed("debe", page=3)
+        assert session.calls[0][1].endswith("/v2/index/today")
+        assert session.calls[1][1].endswith("/v2/index/debe/")
+
+    asyncio.run(run())
 
 
 def test_write_rejects_unsuccessful_api_envelope_and_audits_failure() -> None:
@@ -286,13 +391,13 @@ def test_async_login_refresh_reads_and_previews() -> None:
         assert token["refresh_token"] == "refresh"
         await client.me()
         await client.user("a/b")
-        await client.topic_entries("topic", 2)
+        await client.topic_entries(109286, 2)
         await client.user_entries("nick", 2)
         await client.popular(2, ["spor"])
         await client.today(2)
         await client.agenda(2)
         await client.search_topics("q", 2)
-        await client.search_entries("q", 2)
+        await client.search_entries(109286, "q", 2)
         assert isinstance(
             await client.create_entry("t", "c", dry_run=True), WritePreview
         )
