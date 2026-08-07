@@ -19,6 +19,7 @@ def clear_credential_environment(monkeypatch: pytest.MonkeyPatch) -> None:
         "EKSI_REFRESH_TOKEN",
         "EKSI_EXPIRES_IN",
         "EKSI_CLIENT_UNIQUE_ID",
+        "EKSI_NICK",
         "EKSI_USERNAME",
         "EKSI_PASSWORD",
         "EKSI_TIMEOUT",
@@ -32,6 +33,7 @@ def test_environment_token_credentials(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("EKSI_REFRESH_TOKEN", "refresh")
     monkeypatch.setenv("EKSI_EXPIRES_IN", "3600")
     monkeypatch.setenv("EKSI_CLIENT_UNIQUE_ID", "device-id")
+    monkeypatch.setenv("EKSI_NICK", "alice")
     monkeypatch.delenv("EKSI_USERNAME", raising=False)
     monkeypatch.delenv("EKSI_PASSWORD", raising=False)
 
@@ -41,6 +43,7 @@ def test_environment_token_credentials(monkeypatch: pytest.MonkeyPatch) -> None:
         assert client.session.headers["Client-Secret"] == "secret"
         assert client.token_info.refresh_token == "refresh"
         assert client.client_unique_id == "device-id"
+        assert client.account_nick == "alice"
     finally:
         client.close()
 

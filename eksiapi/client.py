@@ -71,6 +71,7 @@ class EksiClient:
         *,
         refresh_token: str | None = None,
         expires_in: float | None = None,
+        account_nick: str | None = None,
         client_unique_id: str | None = None,
         timeout: float = 30.0,
         base_url: str = BASE,
@@ -114,6 +115,7 @@ class EksiClient:
         self.last_request_id: str | None = None
         self.token_info: TokenInfo | None = None
         self.auth_mode: Literal["none", "anonymous", "account"] = "none"
+        self.account_nick = account_nick.strip() if account_nick else None
         if access_token and client_secret:
             expires_at = time.time() + expires_in if expires_in is not None else None
             self._set_auth(
@@ -153,6 +155,8 @@ class EksiClient:
             expires_at=expires_at,
         )
         self.auth_mode = mode
+        if mode == "anonymous":
+            self.account_nick = None
 
     def _auth_form(self, server_time: int, client_secret: str) -> dict[str, Any]:
         fingerprint = self.fingerprint
@@ -263,6 +267,9 @@ class EksiClient:
             expires_at=expires_at,
             mode="account",
         )
+        nick = payload.get("nick") or payload.get("Nick")
+        if nick and str(nick).strip():
+            self.account_nick = str(nick).strip()
 
     def refresh_access_token(self) -> dict[str, Any]:
         """Exchange the retained refresh token for a new access token."""
@@ -364,7 +371,19 @@ class EksiClient:
 
     # Public and account reads
     def me(self) -> Any:
-        return self._get("/v2/user/me")
+        """Return the logged-in account's public profile.
+
+        The Android API has no dedicated ``/v2/user/me`` endpoint. Login
+        responses include the account nick, which is resolved through the
+        public profile endpoint instead.
+        """
+        if self.auth_mode != "account":
+            raise EksiAuthenticationError("me requires an authenticated Ekşi account")
+        if not self.account_nick:
+            raise EksiAuthenticationError(
+                "Account nickname is unknown; pass account_nick when reusing a token"
+            )
+        return self.user(self.account_nick)
 
     def me_typed(self) -> User:
         payload = ApiResponse.from_payload(self.me()).data
@@ -491,13 +510,119 @@ class EksiClient:
         nick = quote(_required_text(nick, "nick", maximum=60), safe="")
         return self._get(f"/v2/message/thread/Nick/{nick}", params={"p": page})
 
-    def archived_message_thread(self, nick: str) -> Any:
+    def archived_message_thread(self, nick: str, page: int = 1) -> Any:
         nick = quote(_required_text(nick, "nick", maximum=60), safe="")
-        return self._get(f"/v2/message/archivethread/Nick/{nick}")
+        return self._get(
+            f"/v2/message/archivethread/Nick/{nick}",
+            params={"p": _positive(page, "page")},
+        )
+
+    def message_archives(self, page: int = 1) -> Any:
+        """List archived message conversations."""
+        return self._get("/v2/message/archive", params={"p": _positive(page, "page")})
 
     def message_recipient_info(self, nick: str) -> Any:
         nick = quote(_required_text(nick, "nick", maximum=60), safe="")
         return self._get(f"/v2/message/recipientinfo/{nick}")
+
+    def unread_message_thread(self, nick: str, *, mark_read: bool = False) -> Any:
+        """Read a conversation from the unread-thread endpoint."""
+        return self._post(
+            "/v2/message/thread/unread",
+            form_body={
+                "Nick": _required_text(nick, "nick", maximum=60),
+                "MarkRead": mark_read,
+            },
+            retryable=not mark_read,
+        )
+
+    def comments(self, entry_id: int, page: int = 1, size: int = 20) -> Any:
+        """List comments attached to an entry."""
+        return self._get(
+            f"/v2/comment/list/{_positive(entry_id, 'entry_id')}/",
+            params={"page": _positive(page, "page"), "size": _positive(size, "size")},
+        )
+
+    def entry_likes(self, entry_id: int) -> Any:
+        return self._entry_people(entry_id, "likes")
+
+    def entry_favorites(self, entry_id: int) -> Any:
+        return self._entry_people(entry_id, "favorites")
+
+    def entry_caylak_likes(self, entry_id: int) -> Any:
+        return self._entry_people(entry_id, "caylaklikes")
+
+    def entry_caylak_favorites(self, entry_id: int) -> Any:
+        return self._entry_people(entry_id, "caylakfavorites")
+
+    def _entry_people(self, entry_id: int, collection: str) -> Any:
+        return self._get(f"/v2/entry/{_positive(entry_id, 'entry_id')}/{collection}")
+
+    def user_following(self, nick: str, page: int = 1) -> Any:
+        return self._user_paged_collection(nick, "following", page)
+
+    def user_followers(self, nick: str, page: int = 1) -> Any:
+        return self._user_paged_collection(nick, "followers", page)
+
+    def user_badges(self, nick: str) -> Any:
+        nick = quote(_required_text(nick, "nick", maximum=60), safe="")
+        return self._get(f"/v2/user/{nick}/badges")
+
+    def user_images(self, nick: str, page: int = 1) -> Any:
+        nick = quote(_required_text(nick, "nick", maximum=60), safe="")
+        # The double slash is present in the APK 2.4.10 Retrofit contract.
+        return self._get(
+            f"/v2/user/{nick}//images", params={"p": _positive(page, "page")}
+        )
+
+    def _user_paged_collection(self, nick: str, collection: str, page: int) -> Any:
+        nick = quote(_required_text(nick, "nick", maximum=60), safe="")
+        return self._get(
+            f"/v2/user/{nick}/{collection}", params={"p": _positive(page, "page")}
+        )
+
+    def buddies(self) -> Any:
+        return self._get("/v2/user/buddies")
+
+    def buddy_list(self, page: int = 1) -> Any:
+        return self._get("/v2/user/buddy-list", params={"p": _positive(page, "page")})
+
+    def mute_list(self, page: int = 1) -> Any:
+        return self._get("/v2/user/mute-list", params={"p": _positive(page, "page")})
+
+    def block_list(self, page: int = 1) -> Any:
+        return self._get("/v2/user/block-list", params={"p": _positive(page, "page")})
+
+    def blocked_users(self) -> Any:
+        return self._get("/v2/user/blocks")
+
+    def index_title_blocks(self) -> Any:
+        return self._get("/v2/user/index-title-blocks")
+
+    def index_title_block_list(self, page: int = 1) -> Any:
+        return self._get(
+            "/v2/user/index-title-block-list",
+            params={"p": _positive(page, "page")},
+        )
+
+    def homepage_entries(self, page: int = 1) -> Any:
+        return self._get("/v2/homepage/entries", params={"p": _positive(page, "page")})
+
+    def offline_debe(self, from_date: str | None = None) -> Any:
+        params = {"fromDate": from_date} if from_date else None
+        return self._get("/v2/index/offlinedebe", params=params)
+
+    def topic_creator_info(self, topic_id: int) -> Any:
+        return self._get(
+            "/v2/topic/gettopiccreatorinfo/",
+            params={"topicId": _positive(topic_id, "topic_id")},
+        )
+
+    def user_channel_filters(self) -> Any:
+        return self._get("/v2/index/getuserchannelfilters")
+
+    def user_follow_approval_status(self) -> Any:
+        return self._get("/v2/user/is-follow-approvel")
 
     def editable_entry(self, entry_id: int) -> Any:
         return self._get(f"/v2/entry/edit/{_positive(entry_id, 'entry_id')}")
@@ -780,6 +905,120 @@ class EksiClient:
             dry_run=dry_run,
         )
 
+    def add_comment(
+        self, entry_id: int, content: str, *, dry_run: bool = False
+    ) -> WritePreview | WriteResult:
+        body = {
+            "Id": _positive(entry_id, "entry_id"),
+            "Content": _required_text(content, "content", maximum=10_000),
+        }
+        return self._write(
+            "add_comment",
+            "/v2/comment/add",
+            target=str(entry_id),
+            fields=body,
+            destructive=False,
+            idempotent=False,
+            form_body=body,
+            dry_run=dry_run,
+        )
+
+    def edit_comment(
+        self, comment_id: int, content: str, *, dry_run: bool = False
+    ) -> WritePreview | WriteResult:
+        body = {
+            "Id": _positive(comment_id, "comment_id"),
+            "Content": _required_text(content, "content", maximum=10_000),
+        }
+        return self._write(
+            "edit_comment",
+            "/v2/comment/edit",
+            target=str(comment_id),
+            fields=body,
+            destructive=True,
+            idempotent=True,
+            form_body=body,
+            dry_run=dry_run,
+        )
+
+    def delete_comment(
+        self, comment_id: int, *, dry_run: bool = False
+    ) -> WritePreview | WriteResult:
+        return self._comment_action(
+            "delete_comment",
+            "/v2/comment/delete",
+            comment_id,
+            destructive=True,
+            idempotent=False,
+            dry_run=dry_run,
+        )
+
+    def vote_comment(
+        self,
+        comment_id: int,
+        rate: Literal[-1, 1],
+        *,
+        owner_id: int | None = None,
+        dry_run: bool = False,
+    ) -> WritePreview | WriteResult:
+        comment_id = _positive(comment_id, "comment_id")
+        if rate not in {-1, 1}:
+            raise ValueError("rate must be -1 or 1")
+        body: dict[str, Any] = {"Id": comment_id, "Rate": rate}
+        if owner_id is not None:
+            body["Owner"] = _positive(owner_id, "owner_id")
+        return self._write(
+            "vote_comment",
+            "/v2/comment/vote/",
+            target=str(comment_id),
+            fields=body,
+            destructive=False,
+            idempotent=True,
+            form_body=body,
+            dry_run=dry_run,
+        )
+
+    def remove_comment_vote(
+        self, comment_id: int, rate: Literal[-1, 1], *, dry_run: bool = False
+    ) -> WritePreview | WriteResult:
+        comment_id = _positive(comment_id, "comment_id")
+        if rate not in {-1, 1}:
+            raise ValueError("rate must be -1 or 1")
+        body = {"Id": comment_id, "Rate": rate}
+        return self._write(
+            "remove_comment_vote",
+            "/v2/comment/removevote/",
+            target=str(comment_id),
+            fields=body,
+            destructive=False,
+            idempotent=True,
+            form_body=body,
+            dry_run=dry_run,
+        )
+
+    def _comment_action(
+        self,
+        operation: str,
+        path: str,
+        comment_id: int,
+        *,
+        destructive: bool,
+        idempotent: bool,
+        dry_run: bool,
+    ) -> WritePreview | WriteResult:
+        comment_id = _positive(comment_id, "comment_id")
+        body = {"Id": comment_id}
+        return self._write(
+            operation,
+            path,
+            target=str(comment_id),
+            fields=body,
+            destructive=destructive,
+            idempotent=idempotent,
+            form_body=body,
+            dry_run=dry_run,
+        )
+
     def save_draft(
         self, title: str, content: str, *, dry_run: bool = False
     ) -> WritePreview | WriteResult:
@@ -830,6 +1069,172 @@ class EksiClient:
             dry_run=dry_run,
         )
 
+    def set_channel_filters(
+        self, filters: Mapping[str, Any], *, dry_run: bool = False
+    ) -> WritePreview | WriteResult:
+        if not filters:
+            raise ValueError("filters cannot be empty")
+        body = dict(filters)
+        return self._write(
+            "set_channel_filters",
+            "/v2/index/setchannelfilter",
+            target="account",
+            fields=body,
+            destructive=False,
+            idempotent=True,
+            json_body=body,
+            dry_run=dry_run,
+        )
+
+    def set_notification_preferences(
+        self, preferences: Mapping[str, Any], *, dry_run: bool = False
+    ) -> WritePreview | WriteResult:
+        if not preferences:
+            raise ValueError("preferences cannot be empty")
+        body = dict(preferences)
+        return self._write(
+            "set_notification_preferences",
+            "/v2/pushnotification/setpreferences",
+            target="account",
+            fields=body,
+            destructive=False,
+            idempotent=True,
+            json_body=body,
+            dry_run=dry_run,
+        )
+
+    def register_push_notification(
+        self, registration: Mapping[str, Any], *, dry_run: bool = False
+    ) -> WritePreview | WriteResult:
+        return self._push_registration_action(
+            "register_push_notification",
+            "/v2/pushnotification/register",
+            registration,
+            dry_run,
+        )
+
+    def unregister_push_notification(
+        self, registration: Mapping[str, Any], *, dry_run: bool = False
+    ) -> WritePreview | WriteResult:
+        return self._push_registration_action(
+            "unregister_push_notification",
+            "/v2/pushnotification/unregister",
+            registration,
+            dry_run,
+        )
+
+    def _push_registration_action(
+        self,
+        operation: str,
+        path: str,
+        registration: Mapping[str, Any],
+        dry_run: bool,
+    ) -> WritePreview | WriteResult:
+        if not registration:
+            raise ValueError("registration cannot be empty")
+        body = dict(registration)
+        return self._write(
+            operation,
+            path,
+            target="device",
+            fields=body,
+            destructive=False,
+            idempotent=True,
+            json_body=body,
+            dry_run=dry_run,
+        )
+
+    def set_profile_biography(
+        self, biography: str, *, dry_run: bool = False
+    ) -> WritePreview | WriteResult:
+        body = {"BiographyText": _required_text(biography, "biography", maximum=2_000)}
+        return self._write(
+            "set_profile_biography",
+            "/v2/user/set-profile-biography",
+            target="account",
+            fields=body,
+            destructive=False,
+            idempotent=True,
+            form_body=body,
+            dry_run=dry_run,
+        )
+
+    def remove_profile_biography(
+        self, *, dry_run: bool = False
+    ) -> WritePreview | WriteResult:
+        return self._write(
+            "remove_profile_biography",
+            "/v2/user/remove-profile-biography",
+            target="account",
+            fields={},
+            destructive=True,
+            idempotent=True,
+            dry_run=dry_run,
+        )
+
+    def add_pinned_entry(
+        self, entry_id: int, *, dry_run: bool = False
+    ) -> WritePreview | WriteResult:
+        return self._entry_state_action(
+            "add_pinned_entry", "/v2/user/add-pinned-entry", entry_id, dry_run
+        )
+
+    def remove_pinned_entry(
+        self, entry_id: int, *, dry_run: bool = False
+    ) -> WritePreview | WriteResult:
+        return self._entry_state_action(
+            "remove_pinned_entry", "/v2/user/remove-pinned-entry", entry_id, dry_run
+        )
+
+    def _entry_state_action(
+        self, operation: str, path: str, entry_id: int, dry_run: bool
+    ) -> WritePreview | WriteResult:
+        entry_id = _positive(entry_id, "entry_id")
+        body = {"Id": entry_id}
+        return self._write(
+            operation,
+            path,
+            target=str(entry_id),
+            fields=body,
+            destructive=False,
+            idempotent=True,
+            form_body=body,
+            dry_run=dry_run,
+        )
+
+    def block_index_titles(
+        self, nick: str, *, dry_run: bool = False
+    ) -> WritePreview | WriteResult:
+        return self._index_title_block_action(
+            "block_index_titles", "/v2/user/indextitlesblock", nick, dry_run
+        )
+
+    def unblock_index_titles(
+        self, nick: str, *, dry_run: bool = False
+    ) -> WritePreview | WriteResult:
+        return self._index_title_block_action(
+            "unblock_index_titles",
+            "/v2/user/removeindextitlesblock",
+            nick,
+            dry_run,
+        )
+
+    def _index_title_block_action(
+        self, operation: str, path: str, nick: str, dry_run: bool
+    ) -> WritePreview | WriteResult:
+        nick = _required_text(nick, "nick", maximum=60)
+        body = {"nick": nick}
+        return self._write(
+            operation,
+            path,
+            target=nick,
+            fields=body,
+            destructive=False,
+            idempotent=True,
+            form_body=body,
+            dry_run=dry_run,
+        )
+
     def delete_message_threads(
         self,
         threads: list[tuple[int, int]],
@@ -850,6 +1255,31 @@ class EksiClient:
             "delete_message_threads",
             "/v2/message/deleteprocessthread",
             target=f"{len(items)} thread(s)",
+            fields=body,
+            destructive=True,
+            idempotent=False,
+            json_body=body,
+            dry_run=dry_run,
+        )
+
+    def delete_message_archives(
+        self,
+        archive_ids: list[int],
+        *,
+        dry_run: bool = False,
+    ) -> WritePreview | WriteResult:
+        """Permanently delete conversations from the message archive."""
+        if not archive_ids:
+            raise ValueError("archive_ids cannot be empty")
+        items = [
+            {"ArchiveId": _positive(archive_id, "archive_id")}
+            for archive_id in archive_ids
+        ]
+        body = {"ArchiveIdList": items}
+        return self._write(
+            "delete_message_archives",
+            "/v2/message/deleteprocessarchive",
+            target=f"{len(items)} archive(s)",
             fields=body,
             destructive=True,
             idempotent=False,

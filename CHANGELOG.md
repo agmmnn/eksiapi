@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-08-07
+
+### Added
+
+- 🧩 APK 2.4.10'dan doğrulanan yorumlar, entry etkileşim listeleri, kullanıcı ilişki listeleri, kanal/push ayarları, profil durumu ve mesaj arşivi endpoint'leri sync/async SDK'ya eklendi.
+- 🗄️ Mesaj arşivini sayfalama ve arşiv kayıtlarını kalıcı silme desteği eklendi.
+
+### Fixed
+
+- 🪪 `me()` artık var olmayan `/v2/user/me` yoluna gitmiyor; login yanıtındaki nick ile gerçek profil endpoint'ini kullanıyor. Yeniden kullanılan token'lar için `account_nick`/`EKSI_NICK` desteği eklendi.
+- 📄 Arşiv mesaj dizisinin eksik `p` parametresi ve entry oluşturma fixture'ındaki gerçekte dönmeyen `EntryId` düzeltildi.
+
+### Changed
+
+- ✨ `examples/explore.py`, kısa kalırken gerçek başlık, entry ve kullanıcı örnekleri gösterecek daha canlı bir terminal görünümüne geçirildi.
+- 🎨 README ürün odaklı bir açılış, yeni logo, tutarlı modern badge'ler ve hızlı SDK/MCP demolarıyla yenilendi; ayrıntılı kullanım iki ayrı dokümana taşındı.
+
 ## [1.2.0] - 2026-08-07
 
 ### Added
@@ -44,7 +61,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Python 3.10–3.14 CI, coverage gate, clean wheel installation checks, and linting.
 - Trusted Publishing workflows for TestPyPI and PyPI, artifact attestations, and GitHub Releases.
 
-[Unreleased]: https://github.com/agmmnn/eksiapi/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/agmmnn/eksiapi/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/agmmnn/eksiapi/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/agmmnn/eksiapi/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/agmmnn/eksiapi/compare/v0.1.0...v1.1.0
 [0.1.0]: https://github.com/agmmnn/eksiapi/releases/tag/v0.1.0

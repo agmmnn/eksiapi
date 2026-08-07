@@ -134,6 +134,7 @@ def create_authenticated_client() -> EksiClient:
             client_secret=client_secret,
             refresh_token=os.environ.get("EKSI_REFRESH_TOKEN"),
             expires_in=_expires_in_from_environment(),
+            account_nick=os.environ.get("EKSI_NICK"),
             client_unique_id=os.environ.get("EKSI_CLIENT_UNIQUE_ID"),
             timeout=timeout,
         )

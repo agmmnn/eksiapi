@@ -1,5 +1,5 @@
 """
-Ekşi Sözlük Api-Secret generation — reversed from the Android application.
+Ekşi Sözlük Api-Secret generation, reversed from the Android application.
 
 Plaintext format (confirmed by Frida hook on Cipher.doFinal):
   {randomHex}-{APP_UUID}-{len^2}-{adjustedTime}-{dayOff}-{hourOff}-{minOff}-eksisozluk-android/144-{clientSecret}

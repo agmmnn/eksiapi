@@ -24,11 +24,14 @@ def test_authenticated_read_and_write_preview_contracts() -> None:
     """Exercise account reads and every write shape without mutating production."""
     access_token = os.environ.get("EKSI_ACCESS_TOKEN")
     client_secret = os.environ.get("EKSI_CLIENT_SECRET")
+    account_nick = os.environ.get("EKSI_NICK")
     if not access_token or not client_secret:
         pytest.skip(
             "authenticated live contract requires EKSI_ACCESS_TOKEN/CLIENT_SECRET"
         )
-    with EksiClient(access_token, client_secret) as client:
+    if not account_nick:
+        pytest.skip("authenticated live profile requires EKSI_NICK with token auth")
+    with EksiClient(access_token, client_secret, account_nick=account_nick) as client:
         assert isinstance(client.me(), dict)
         previews = [
             client.create_entry("contract test", "not published", dry_run=True),
@@ -46,5 +49,6 @@ def test_authenticated_read_and_write_preview_contracts() -> None:
             client.mark_message_thread_read("contract", dry_run=True),
             client.save_draft("contract", "not saved", dry_run=True),
             client.delete_draft("contract", dry_run=True),
+            client.delete_message_archives([1], dry_run=True),
         ]
     assert all(preview.digest for preview in previews)

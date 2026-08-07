@@ -262,18 +262,6 @@ paths:
 
   # ── User ────────────────────────────────────────────────────────────────────
 
-  /v2/user/me:
-    get:
-      tags: [User]
-      summary: Authenticated user profile
-      responses:
-        '200':
-          description: Current user's profile data
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
-
   /v2/user/isdeveloper:
     get:
       tags: [User]
@@ -783,8 +771,37 @@ paths:
       x-eksi-risk: sensitive-read
       parameters:
         - {name: username, in: path, required: true, schema: {type: string}}
+        - {name: p, in: query, schema: {type: integer, minimum: 1, default: 1}}
       responses:
         '200': {description: Archived thread, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/message/archive:
+    get:
+      tags: [Messages]
+      summary: List archived message conversations
+      x-eksi-risk: sensitive-read
+      parameters:
+        - {name: p, in: query, schema: {type: integer, minimum: 1, default: 1}}
+      responses:
+        '200': {description: Message archive, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/message/thread/unread:
+    post:
+      tags: [Messages]
+      summary: Read an unread message conversation
+      x-eksi-risk: sensitive-read
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [Nick, MarkRead]
+              properties:
+                Nick: {type: string}
+                MarkRead: {type: boolean, default: false}
+      responses:
+        '200': {description: Message thread, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
 
   /v2/message/sendmessage:
     post:
@@ -827,6 +844,330 @@ paths:
                       MaxMessageId: {type: integer}
       responses:
         '200': {description: Delete result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/message/archiveprocessthread:
+    post:
+      tags: [Messages]
+      summary: Move message conversations to the archive
+      x-eksi-risk: high
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ThreadIdList]
+              properties:
+                ThreadIdList:
+                  type: array
+                  items:
+                    type: object
+                    required: [ThreadId, MaxMessageId]
+                    properties:
+                      ThreadId: {type: integer, minimum: 1}
+                      MaxMessageId: {type: integer, minimum: 1}
+      responses:
+        '200': {description: Archive result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/message/deleteprocessarchive:
+    post:
+      tags: [Messages]
+      summary: Permanently delete archived conversations
+      x-eksi-risk: critical-destructive
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ArchiveIdList]
+              properties:
+                ArchiveIdList:
+                  type: array
+                  items:
+                    type: object
+                    required: [ArchiveId]
+                    properties:
+                      ArchiveId: {type: integer, minimum: 1}
+      responses:
+        '200': {description: Delete result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/comment/list/{entryId}:
+    get:
+      tags: [Comments]
+      summary: List comments for an entry
+      parameters:
+        - {name: entryId, in: path, required: true, schema: {type: integer, minimum: 1}}
+        - {name: page, in: query, schema: {type: integer, minimum: 1, default: 1}}
+        - {name: size, in: query, schema: {type: integer, minimum: 1, default: 20}}
+      responses:
+        '200': {description: Comments, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/comment/add:
+    post:
+      tags: [Comments]
+      summary: Add a comment to an entry
+      x-eksi-risk: critical-external-communication
+      requestBody: {required: true, content: {application/x-www-form-urlencoded: {schema: {type: object, required: [Id, Content], properties: {Id: {type: integer}, Content: {type: string}}}}}}
+      responses:
+        '200': {description: Write result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/comment/edit:
+    post:
+      tags: [Comments]
+      summary: Edit a comment
+      x-eksi-risk: critical-destructive
+      requestBody: {required: true, content: {application/x-www-form-urlencoded: {schema: {type: object, required: [Id, Content], properties: {Id: {type: integer}, Content: {type: string}}}}}}
+      responses:
+        '200': {description: Write result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/comment/delete:
+    post:
+      tags: [Comments]
+      summary: Delete a comment
+      x-eksi-risk: critical-destructive
+      requestBody: {required: true, content: {application/x-www-form-urlencoded: {schema: {$ref: '#/components/schemas/IdForm'}}}}
+      responses:
+        '200': {description: Write result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/comment/vote:
+    post:
+      tags: [Comments]
+      summary: Vote on a comment
+      x-eksi-risk: medium
+      requestBody: {required: true, content: {application/x-www-form-urlencoded: {schema: {type: object, required: [Id, Rate], properties: {Id: {type: integer}, Rate: {type: integer, enum: [-1, 1]}, Owner: {type: integer}}}}}}
+      responses:
+        '200': {description: Write result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/comment/removevote:
+    post:
+      tags: [Comments]
+      summary: Remove a comment vote
+      x-eksi-risk: medium
+      requestBody: {required: true, content: {application/x-www-form-urlencoded: {schema: {type: object, required: [Id, Rate], properties: {Id: {type: integer}, Rate: {type: integer, enum: [-1, 1]}}}}}}
+      responses:
+        '200': {description: Write result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/entry/{entryId}/likes:
+    get:
+      tags: [Entries]
+      summary: List users who liked an entry
+      parameters: [{name: entryId, in: path, required: true, schema: {type: integer, minimum: 1}}]
+      responses: {'200': {description: User list, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/entry/{entryId}/favorites:
+    get:
+      tags: [Entries]
+      summary: List users who favorited an entry
+      parameters: [{name: entryId, in: path, required: true, schema: {type: integer, minimum: 1}}]
+      responses: {'200': {description: User list, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/entry/{entryId}/caylaklikes:
+    get:
+      tags: [Entries]
+      summary: List çaylak users who liked an entry
+      parameters: [{name: entryId, in: path, required: true, schema: {type: integer, minimum: 1}}]
+      responses: {'200': {description: User list, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/entry/{entryId}/caylakfavorites:
+    get:
+      tags: [Entries]
+      summary: List çaylak users who favorited an entry
+      parameters: [{name: entryId, in: path, required: true, schema: {type: integer, minimum: 1}}]
+      responses: {'200': {description: User list, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/user/{nick}/following:
+    get:
+      tags: [User]
+      summary: List accounts followed by a user
+      parameters:
+        - {name: nick, in: path, required: true, schema: {type: string}}
+        - {name: p, in: query, schema: {type: integer, minimum: 1, default: 1}}
+      responses: {'200': {description: Following list, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/user/{nick}/followers:
+    get:
+      tags: [User]
+      summary: List a user's followers
+      parameters:
+        - {name: nick, in: path, required: true, schema: {type: string}}
+        - {name: p, in: query, schema: {type: integer, minimum: 1, default: 1}}
+      responses: {'200': {description: Follower list, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/user/{nick}/badges:
+    get:
+      tags: [User]
+      summary: List a user's badges
+      parameters: [{name: nick, in: path, required: true, schema: {type: string}}]
+      responses: {'200': {description: Badge list, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/user/{nick}//images:
+    get:
+      tags: [User]
+      summary: List images posted by a user
+      description: The double slash matches the Android 2.4.10 Retrofit contract.
+      parameters:
+        - {name: nick, in: path, required: true, schema: {type: string}}
+        - {name: p, in: query, schema: {type: integer, minimum: 1, default: 1}}
+      responses: {'200': {description: Image list, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/user/buddies:
+    get:
+      tags: [Account reads]
+      summary: List buddy users
+      responses: {'200': {description: Buddy list, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/user/buddy-list:
+    get:
+      tags: [Account reads]
+      summary: List buddy relationships with pagination
+      parameters: [{name: p, in: query, schema: {type: integer, minimum: 1, default: 1}}]
+      responses: {'200': {description: Buddy list, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/user/mute-list:
+    get:
+      tags: [Account reads]
+      summary: List muted users
+      parameters: [{name: p, in: query, schema: {type: integer, minimum: 1, default: 1}}]
+      responses: {'200': {description: Mute list, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/user/block-list:
+    get:
+      tags: [Account reads]
+      summary: List blocked relationships
+      parameters: [{name: p, in: query, schema: {type: integer, minimum: 1, default: 1}}]
+      responses: {'200': {description: Block list, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/user/blocks:
+    get:
+      tags: [Account reads]
+      summary: List blocked users
+      responses: {'200': {description: Blocked users, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/user/index-title-blocks:
+    get:
+      tags: [Account reads]
+      summary: List users hidden from index titles
+      responses: {'200': {description: Hidden users, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/user/index-title-block-list:
+    get:
+      tags: [Account reads]
+      summary: List index-title blocks with pagination
+      parameters: [{name: p, in: query, schema: {type: integer, minimum: 1, default: 1}}]
+      responses: {'200': {description: Hidden users, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/homepage/entries:
+    get:
+      tags: [Entries]
+      summary: Read the personalized homepage entry feed
+      parameters: [{name: p, in: query, schema: {type: integer, minimum: 1, default: 1}}]
+      responses: {'200': {description: Homepage entries, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/index/offlinedebe:
+    get:
+      tags: [Index]
+      summary: Read the offline debe feed
+      parameters: [{name: fromDate, in: query, schema: {type: string, format: date}}]
+      responses: {'200': {description: Debe entries, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/topic/gettopiccreatorinfo:
+    get:
+      tags: [Topics]
+      summary: Get topic creator information
+      parameters: [{name: topicId, in: query, required: true, schema: {type: integer, minimum: 1}}]
+      responses: {'200': {description: Creator information, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/index/getuserchannelfilters:
+    get:
+      tags: [Account reads]
+      summary: Get the account's channel filters
+      responses: {'200': {description: Channel filters, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/user/is-follow-approvel:
+    get:
+      tags: [Account reads]
+      summary: Get follow-approval status
+      responses: {'200': {description: Follow-approval status, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/index/setchannelfilter:
+    post:
+      tags: [Account writes]
+      summary: Set account channel filters
+      x-eksi-risk: medium
+      requestBody: {required: true, content: {application/json: {schema: {type: object, additionalProperties: true}}}}
+      responses: {'200': {description: Write result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/pushnotification/setpreferences:
+    post:
+      tags: [Account writes]
+      summary: Set push-notification preferences
+      x-eksi-risk: medium
+      requestBody: {required: true, content: {application/json: {schema: {type: object, additionalProperties: true}}}}
+      responses: {'200': {description: Write result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/pushnotification/register:
+    post:
+      tags: [Account writes]
+      summary: Register a push-notification device
+      x-eksi-risk: medium
+      requestBody: {required: true, content: {application/json: {schema: {type: object, additionalProperties: true}}}}
+      responses: {'200': {description: Write result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/pushnotification/unregister:
+    post:
+      tags: [Account writes]
+      summary: Unregister a push-notification device
+      x-eksi-risk: medium
+      requestBody: {required: true, content: {application/json: {schema: {type: object, additionalProperties: true}}}}
+      responses: {'200': {description: Write result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/user/set-profile-biography:
+    post:
+      tags: [Account writes]
+      summary: Set the profile biography
+      x-eksi-risk: high
+      requestBody: {required: true, content: {application/x-www-form-urlencoded: {schema: {type: object, required: [BiographyText], properties: {BiographyText: {type: string}}}}}}
+      responses: {'200': {description: Write result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/user/remove-profile-biography:
+    post:
+      tags: [Account writes]
+      summary: Remove the profile biography
+      x-eksi-risk: high-destructive
+      responses: {'200': {description: Write result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/user/add-pinned-entry:
+    post:
+      tags: [Account writes]
+      summary: Pin an entry to the profile
+      x-eksi-risk: medium
+      requestBody: {required: true, content: {application/x-www-form-urlencoded: {schema: {$ref: '#/components/schemas/IdForm'}}}}
+      responses: {'200': {description: Write result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/user/remove-pinned-entry:
+    post:
+      tags: [Account writes]
+      summary: Remove a pinned profile entry
+      x-eksi-risk: medium
+      requestBody: {required: true, content: {application/x-www-form-urlencoded: {schema: {$ref: '#/components/schemas/IdForm'}}}}
+      responses: {'200': {description: Write result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/user/indextitlesblock:
+    post:
+      tags: [Account writes]
+      summary: Hide a user's topics from index views
+      x-eksi-risk: medium
+      requestBody: {required: true, content: {application/x-www-form-urlencoded: {schema: {$ref: '#/components/schemas/NickForm'}}}}
+      responses: {'200': {description: Write result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
+
+  /v2/user/removeindextitlesblock:
+    post:
+      tags: [Account writes]
+      summary: Restore a user's topics to index views
+      x-eksi-risk: medium
+      requestBody: {required: true, content: {application/x-www-form-urlencoded: {schema: {$ref: '#/components/schemas/NickForm'}}}}
+      responses: {'200': {description: Write result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}}
 
   /v2/topic/savedraft:
     post:
