@@ -29,7 +29,7 @@ def test_safe_get_retries_and_write_never_retries() -> None:
         session=session,
         retry_policy=RetryPolicy(max_attempts=2, backoff_factor=0),
     )
-    assert client.me()["Data"]["ok"] is True
+    assert client.user("alice")["Data"]["ok"] is True
     assert len(session.calls) == 2
 
     write_session = MockSession([MockResponse(503, {"Message": "temporary"})])
@@ -94,7 +94,7 @@ def test_refresh_rate_limit_raw_mode_and_typed_entry() -> None:
         session=MockSession([MockResponse(200, {"Data": {"value": 1}})]),
         raw_response=False,
     )
-    assert unwrapped.me() == {"value": 1}
+    assert unwrapped.user("alice") == {"value": 1}
 
 
 def test_pagination_iterator_and_write_preview_audit() -> None:
@@ -204,10 +204,11 @@ def test_async_anonymous_client_bootstraps_renews_and_blocks_writes() -> None:
 
 
 def test_sync_account_surface_builds_apk_requests_without_network_on_preview() -> None:
-    session = MockSession([MockResponse(200, {}) for _ in range(8)])
+    session = MockSession([MockResponse(200, {}) for _ in range(9)])
     client = EksiClient(session=session)
     client.message_thread("a/b", 2)
     client.archived_message_thread("a/b")
+    client.message_archives(2)
     client.message_recipient_info("a/b")
     client.editable_entry(9)
     client.personal_settings()
@@ -235,6 +236,7 @@ def test_sync_account_surface_builds_apk_requests_without_network_on_preview() -
         client.delete_draft("title", dry_run=True),
         client.set_preferences({"theme": "dark"}, dry_run=True),
         client.delete_message_threads([(1, 2)], dry_run=True),
+        client.delete_message_archives([3], dry_run=True),
         client.archive_message_threads([(1, 2)], dry_run=True),
         client.delete_trash_entry(1, dry_run=True),
         client.empty_trash(dry_run=True),
@@ -253,6 +255,7 @@ def test_validation_rejects_unsafe_write_inputs() -> None:
         lambda: client.set_preferences({}, dry_run=True),
         lambda: client.delete_message_threads([], dry_run=True),
         lambda: client.archive_message_threads([], dry_run=True),
+        lambda: client.delete_message_archives([], dry_run=True),
     ]
     for call in invalid_calls:
         with pytest.raises(ValueError):
@@ -272,6 +275,7 @@ def test_async_login_refresh_reads_and_previews() -> None:
                         "access_token": "account",
                         "refresh_token": "refresh",
                         "expires_in": 3600,
+                        "nick": "user",
                     },
                 ),
                 *[MockResponse(200, {"Data": {}}) for _ in range(9)],
@@ -310,7 +314,7 @@ def test_async_login_refresh_reads_and_previews() -> None:
 
 def test_async_client_matches_extended_account_surface() -> None:
     async def run() -> None:
-        session = AsyncMockSession([MockResponse(200, {"Data": {}}) for _ in range(18)])
+        session = AsyncMockSession([MockResponse(200, {"Data": {}}) for _ in range(19)])
         client = AsyncEksiClient(session=session)
         await client.is_developer()
         await client.user_favorites("nick", 2)
@@ -322,6 +326,7 @@ def test_async_client_matches_extended_account_surface() -> None:
         await client.unread_message_authors()
         await client.message_thread("nick", 2)
         await client.archived_message_thread("nick")
+        await client.message_archives(2)
         await client.message_recipient_info("nick")
         await client.editable_entry(1)
         await client.channel_list()
@@ -341,6 +346,7 @@ def test_async_client_matches_extended_account_surface() -> None:
             await client.delete_draft("title", dry_run=True),
             await client.set_preferences({"theme": "dark"}, dry_run=True),
             await client.delete_message_threads([(1, 2)], dry_run=True),
+            await client.delete_message_archives([3], dry_run=True),
             await client.archive_message_threads([(1, 2)], dry_run=True),
             await client.delete_trash_entry(1, dry_run=True),
             await client.restore_trash_entry(1, dry_run=True),

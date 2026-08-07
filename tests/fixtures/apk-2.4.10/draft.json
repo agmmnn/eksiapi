@@ -9,5 +9,5 @@
     "path": "/v2/topic/deletedraft",
     "body": {"Title": "örnek başlık"}
   },
-  "response": {"Success": true, "Data": true}
+  "response": {"Success": true, "Message": null}
 }

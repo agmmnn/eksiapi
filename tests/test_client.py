@@ -42,7 +42,7 @@ class FakeSession:
 
 
 def test_package_exposes_version() -> None:
-    assert __version__ == "1.2.0"
+    assert __version__ == "1.3.0"
 
 
 def test_client_sets_auth_and_timeout() -> None:
@@ -50,6 +50,7 @@ def test_client_sets_auth_and_timeout() -> None:
     client = EksiClient(
         access_token="token",
         client_secret="secret",
+        account_nick="alice",
         timeout=12,
         session=session,
     )
@@ -158,19 +159,19 @@ def test_anonymous_client_rejects_account_mutations_but_keeps_dry_run() -> None:
 def test_client_maps_safe_http_errors(status: int, error_type: type[Exception]) -> None:
     client = EksiClient(session=FakeSession(FakeResponse(status, {})))
     with pytest.raises(error_type):
-        client.me()
+        client.user("alice")
 
 
 def test_client_maps_not_found_and_server_message() -> None:
     client = EksiClient(session=FakeSession(FakeResponse(404, {})))
     with pytest.raises(EksiNotFoundError):
-        client.me()
+        client.user("alice")
 
     client = EksiClient(
         session=FakeSession(FakeResponse(500, {"Message": "service unavailable"}))
     )
     with pytest.raises(EksiApiError, match="service unavailable"):
-        client.me()
+        client.user("alice")
 
     client = EksiClient(
         session=FakeSession(
@@ -189,16 +190,16 @@ def test_client_maps_network_and_response_shape_errors() -> None:
             raise OSError("offline")
 
     with pytest.raises(EksiTransportError, match="request failed"):
-        EksiClient(session=BrokenSession()).me()
+        EksiClient(session=BrokenSession()).user("alice")
 
     with pytest.raises(EksiTransportError, match="unexpected response shape"):
-        EksiClient(session=FakeSession(FakeResponse(200, []))).me()
+        EksiClient(session=FakeSession(FakeResponse(200, []))).user("alice")
 
 
 def test_client_rejects_non_json_response() -> None:
     client = EksiClient(session=FakeSession(FakeResponse(200, ValueError("not json"))))
     with pytest.raises(EksiTransportError, match="invalid JSON"):
-        client.me()
+        client.user("alice")
 
 
 def test_login_flow_replaces_anonymous_auth() -> None:
@@ -206,7 +207,7 @@ def test_login_flow_replaces_anonymous_auth() -> None:
         FakeResponse(200, {"Data": 1_800_000_000_000}),
         FakeResponse(200, {"Data": {"AccessToken": "anonymous"}}),
         FakeResponse(200, {"Data": 1_800_000_000_100}),
-        FakeResponse(200, {"access_token": "account-token"}),
+        FakeResponse(200, {"access_token": "account-token", "nick": "alice"}),
     )
     client = EksiClient(session=session)
 
@@ -217,6 +218,29 @@ def test_login_flow_replaces_anonymous_auth() -> None:
     assert session.headers["Client-Secret"]
     assert session.calls[-1][2]["data"]["password"] == "password"
     assert client.auth_mode == "account"
+    assert client.account_nick == "alice"
+
+
+def test_me_uses_login_nick_and_rejects_unknown_identity() -> None:
+    session = FakeSession(FakeResponse(200, {"Data": {"Nick": "alice"}}))
+    client = EksiClient(
+        access_token="token",
+        client_secret="secret",
+        account_nick="alice/bob",
+        session=session,
+    )
+
+    assert client.me()["Data"]["Nick"] == "alice"
+    assert session.calls[0][1].endswith("/v2/user/alice%2Fbob/")
+
+    unknown = EksiClient(
+        access_token="token", client_secret="secret", session=FakeSession()
+    )
+    with pytest.raises(EksiAuthenticationError, match="account_nick"):
+        unknown.me()
+
+    with pytest.raises(EksiAuthenticationError, match="authenticated Ekşi account"):
+        EksiClient(session=FakeSession()).me()
 
 
 def test_login_rejects_missing_access_token_and_bad_server_time() -> None:
@@ -282,6 +306,7 @@ def test_endpoint_helpers_build_expected_requests() -> None:
         ("notifications", (), {"page": 10}),
         ("unread_topic_count", (), {}),
         ("unread_message_authors", (), {}),
+        ("message_archives", (), {"page": 2}),
         ("channel_list", (), {}),
         ("server_time", (), {}),
         ("billing_status", (), {}),
