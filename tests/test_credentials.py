@@ -16,6 +16,9 @@ def clear_credential_environment(monkeypatch: pytest.MonkeyPatch) -> None:
     for name in (
         "EKSI_ACCESS_TOKEN",
         "EKSI_CLIENT_SECRET",
+        "EKSI_REFRESH_TOKEN",
+        "EKSI_EXPIRES_IN",
+        "EKSI_CLIENT_UNIQUE_ID",
         "EKSI_USERNAME",
         "EKSI_PASSWORD",
         "EKSI_TIMEOUT",
@@ -26,6 +29,9 @@ def clear_credential_environment(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_environment_token_credentials(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("EKSI_ACCESS_TOKEN", "token")
     monkeypatch.setenv("EKSI_CLIENT_SECRET", "secret")
+    monkeypatch.setenv("EKSI_REFRESH_TOKEN", "refresh")
+    monkeypatch.setenv("EKSI_EXPIRES_IN", "3600")
+    monkeypatch.setenv("EKSI_CLIENT_UNIQUE_ID", "device-id")
     monkeypatch.delenv("EKSI_USERNAME", raising=False)
     monkeypatch.delenv("EKSI_PASSWORD", raising=False)
 
@@ -33,6 +39,8 @@ def test_environment_token_credentials(monkeypatch: pytest.MonkeyPatch) -> None:
     try:
         assert client.session.headers["Authorization"] == "Bearer token"
         assert client.session.headers["Client-Secret"] == "secret"
+        assert client.token_info.refresh_token == "refresh"
+        assert client.client_unique_id == "device-id"
     finally:
         client.close()
 
@@ -43,6 +51,15 @@ def test_incomplete_environment_token_is_rejected(
     monkeypatch.setenv("EKSI_ACCESS_TOKEN", "token")
     monkeypatch.delenv("EKSI_CLIENT_SECRET", raising=False)
     with pytest.raises(CredentialError, match="must be set together"):
+        credentials.create_authenticated_client()
+
+
+@pytest.mark.parametrize("value", ["oops", "-1"])
+def test_invalid_expires_in_is_rejected(monkeypatch, value) -> None:
+    monkeypatch.setenv("EKSI_ACCESS_TOKEN", "token")
+    monkeypatch.setenv("EKSI_CLIENT_SECRET", "secret")
+    monkeypatch.setenv("EKSI_EXPIRES_IN", value)
+    with pytest.raises(CredentialError, match="EKSI_EXPIRES_IN"):
         credentials.create_authenticated_client()
 
 

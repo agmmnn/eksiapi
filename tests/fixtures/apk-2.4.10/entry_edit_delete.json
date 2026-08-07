@@ -1,0 +1,13 @@
+{
+  "edit_request": {
+    "method": "POST",
+    "path": "/v2/entry/edit",
+    "body": {"Title": "", "Id": 123456789, "Content": "düzenlenmiş içerik"}
+  },
+  "delete_request": {
+    "method": "POST",
+    "path": "/v2/entry/delete",
+    "body": {"Id": 123456789}
+  },
+  "response": {"Success": true, "Data": true}
+}

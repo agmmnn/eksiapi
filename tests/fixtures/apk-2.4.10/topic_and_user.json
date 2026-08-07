@@ -1,0 +1,7 @@
+{
+  "follow_topic": {"method": "POST", "path": "/v2/topic/follow", "body": {"Id": 4242}},
+  "unfollow_topic": {"method": "POST", "path": "/v2/topic/unfollow", "body": {"Id": 4242}},
+  "block_user": {"method": "POST", "path": "/v2/user/block", "body": {"nick": "örnek"}},
+  "unblock_user": {"method": "POST", "path": "/v2/user/unblock", "body": {"nick": "örnek"}},
+  "response": {"Success": true, "Data": true}
+}

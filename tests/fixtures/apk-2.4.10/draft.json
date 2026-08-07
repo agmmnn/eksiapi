@@ -1,0 +1,13 @@
+{
+  "save": {
+    "method": "POST",
+    "path": "/v2/topic/savedraft",
+    "body": {"Title": "örnek başlık", "Content": "taslak içerik"}
+  },
+  "delete": {
+    "method": "POST",
+    "path": "/v2/topic/deletedraft",
+    "body": {"Title": "örnek başlık"}
+  },
+  "response": {"Success": true, "Data": true}
+}

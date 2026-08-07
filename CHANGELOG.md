@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-08-07
+
+### Added
+
+- Async client, typed response models, pagination iterators, anonymous mode,
+  proxy/TLS/fingerprint configuration, rate-limit metadata and mock sessions.
+- Access-token expiry tracking and refresh-token exchange with safe read-only
+  retry/backoff; mutating requests are never retried.
+- Previewable Python account actions for entries, reactions, topic/user state,
+  messages, drafts, settings and trash, with input validation and secret-free audit events.
+- APK 2.4.10/build 144 JADX analysis, sanitized fixtures, expanded OpenAPI contract
+  and opt-in read-only live contract test.
+- MCP `interactive` mode with signed, expiring, single-use previews and client-side
+  human elicitation for every exposed account write. Default mode remains read-only.
+
+### Changed
+
+- Android authentication fingerprint updated from 2.4.4/build 137 to
+  2.4.10/build 144.
+- Direct and development dependencies refreshed to their latest compatible releases.
+
 ## [0.1.0] - 2026-08-07
 
 ### Added
@@ -20,5 +41,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Trusted Publishing workflows for TestPyPI and PyPI, artifact attestations, and
   GitHub Releases.
 
-[Unreleased]: https://github.com/agmmnn/eksiapi/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/agmmnn/eksiapi/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/agmmnn/eksiapi/compare/v0.1.0...v1.1.0
 [0.1.0]: https://github.com/agmmnn/eksiapi/releases/tag/v0.1.0

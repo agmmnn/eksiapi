@@ -3,7 +3,7 @@ info:
   title: Ekşi Sözlük API
   description: |
     Unofficial API documentation for Ekşi Sözlük (eksisozluk.com), reverse-engineered
-    from the Android app v2.4.4.
+    from the Android app v2.4.10 (build 144).
 
     ## Authentication
 
@@ -23,7 +23,7 @@ info:
 
     The API is behind Cloudflare. Python clients must use `curl_cffi` with
     `impersonate="chrome110"` to mimic Chrome's TLS fingerprint.
-  version: "2.4.4"
+  version: "2.4.10"
   contact:
     name: eksiapi
   license:
@@ -47,7 +47,7 @@ components:
     UserAgent:
       schema:
         type: string
-        example: "eksisozluk-android/137"
+        example: "eksisozluk-android/144"
 
   schemas:
     ApiResponse:
@@ -96,10 +96,10 @@ components:
           example: "g"
         Version:
           type: string
-          example: "2.4.4"
+          example: "2.4.10"
         Build:
           type: integer
-          example: 137
+          example: 144
         Api-Secret:
           type: string
           description: RSA-encrypted token (see eksi_auth.py)
@@ -123,6 +123,55 @@ components:
               type: string
             password:
               type: string
+
+    RefreshTokenBody:
+      allOf:
+        - $ref: '#/components/schemas/AnonymousTokenBody'
+        - type: object
+          required: [grant_type, refresh_token]
+          properties:
+            grant_type:
+              type: string
+              enum: [refresh_token]
+            refresh_token:
+              type: string
+
+    IdForm:
+      type: object
+      required: [Id]
+      properties:
+        Id:
+          type: integer
+          minimum: 1
+
+    NickForm:
+      type: object
+      required: [nick]
+      properties:
+        nick:
+          type: string
+          minLength: 1
+
+    EntryForm:
+      type: object
+      required: [Title, Content]
+      properties:
+        Title:
+          type: string
+        Content:
+          type: string
+
+    SendMessageBody:
+      type: object
+      required: [message, to, threadId]
+      properties:
+        message:
+          type: string
+        to:
+          type: string
+        threadId:
+          type: integer
+          minimum: 0
 
 security:
   - bearerAuth: []
@@ -200,7 +249,9 @@ paths:
         content:
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/LoginBody'
+              oneOf:
+                - $ref: '#/components/schemas/LoginBody'
+                - $ref: '#/components/schemas/RefreshTokenBody'
       responses:
         '200':
           description: Access token
@@ -580,3 +631,283 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
+
+  # ── APK 2.4.10 authenticated account surface ───────────────────────────────
+
+  /v2/entry/add:
+    post:
+      tags: [Entry writes]
+      summary: Publish a new entry
+      x-eksi-risk: critical
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EntryForm'
+      responses:
+        '200': {description: Write result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/entry/edit:
+    post:
+      tags: [Entry writes]
+      summary: Edit an entry
+      x-eksi-risk: critical-destructive
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/EntryForm'
+                - type: object
+                  required: [Id]
+                  properties: {Id: {type: integer, minimum: 1}}
+      responses:
+        '200': {description: Write result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/entry/edit/{entryId}:
+    get:
+      tags: [Entries]
+      summary: Get the authenticated author's editable entry content
+      parameters:
+        - {name: entryId, in: path, required: true, schema: {type: integer, minimum: 1}}
+      responses:
+        '200': {description: Editable entry, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/entry/delete:
+    post:
+      tags: [Entry writes]
+      summary: Delete an entry
+      x-eksi-risk: critical-destructive
+      requestBody: {required: true, content: {application/x-www-form-urlencoded: {schema: {$ref: '#/components/schemas/IdForm'}}}}
+      responses:
+        '200': {description: Write result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/entry/favorite:
+    post:
+      tags: [Entry actions]
+      summary: Favorite an entry
+      x-eksi-risk: medium
+      requestBody: {required: true, content: {application/x-www-form-urlencoded: {schema: {$ref: '#/components/schemas/IdForm'}}}}
+      responses:
+        '200': {description: Action result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/entry/unfavorite:
+    post:
+      tags: [Entry actions]
+      summary: Remove an entry favorite
+      x-eksi-risk: medium
+      requestBody: {required: true, content: {application/x-www-form-urlencoded: {schema: {$ref: '#/components/schemas/IdForm'}}}}
+      responses:
+        '200': {description: Action result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/entry/vote:
+    post:
+      tags: [Entry actions]
+      summary: Vote on an entry
+      x-eksi-risk: medium
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/IdForm'
+                - type: object
+                  required: [Rate]
+                  properties: {Rate: {type: integer, enum: [-1, 1]}}
+      responses:
+        '200': {description: Action result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/entry/vote/remove:
+    post:
+      tags: [Entry actions]
+      summary: Remove the authenticated user's entry vote
+      x-eksi-risk: medium
+      requestBody: {required: true, content: {application/x-www-form-urlencoded: {schema: {$ref: '#/components/schemas/IdForm'}}}}
+      responses:
+        '200': {description: Action result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/topic/follow:
+    post:
+      tags: [Topic actions]
+      summary: Follow a topic
+      x-eksi-risk: medium
+      requestBody: {required: true, content: {application/x-www-form-urlencoded: {schema: {$ref: '#/components/schemas/IdForm'}}}}
+      responses:
+        '200': {description: Action result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/topic/unfollow:
+    post:
+      tags: [Topic actions]
+      summary: Unfollow a topic
+      x-eksi-risk: medium
+      requestBody: {required: true, content: {application/x-www-form-urlencoded: {schema: {$ref: '#/components/schemas/IdForm'}}}}
+      responses:
+        '200': {description: Action result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/user/block:
+    post:
+      tags: [User actions]
+      summary: Block a user
+      x-eksi-risk: high
+      requestBody: {required: true, content: {application/x-www-form-urlencoded: {schema: {$ref: '#/components/schemas/NickForm'}}}}
+      responses:
+        '200': {description: Action result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/user/unblock:
+    post:
+      tags: [User actions]
+      summary: Unblock a user
+      x-eksi-risk: high
+      requestBody: {required: true, content: {application/x-www-form-urlencoded: {schema: {$ref: '#/components/schemas/NickForm'}}}}
+      responses:
+        '200': {description: Action result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/message/thread/Nick/{username}:
+    get:
+      tags: [Messages]
+      summary: Read a message thread
+      x-eksi-risk: sensitive-read
+      parameters:
+        - {name: username, in: path, required: true, schema: {type: string}}
+        - {name: p, in: query, schema: {type: integer, minimum: 1, default: 1}}
+      responses:
+        '200': {description: Message thread, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/message/archivethread/Nick/{username}:
+    get:
+      tags: [Messages]
+      summary: Read an archived message thread
+      x-eksi-risk: sensitive-read
+      parameters:
+        - {name: username, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {description: Archived thread, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/message/sendmessage:
+    post:
+      tags: [Messages]
+      summary: Send a direct message
+      x-eksi-risk: critical-external-communication
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/SendMessageBody'}}}}
+      responses:
+        '200': {description: Send result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/message/markread/nick:
+    post:
+      tags: [Messages]
+      summary: Mark a user's message thread read
+      x-eksi-risk: low
+      requestBody: {required: true, content: {application/x-www-form-urlencoded: {schema: {$ref: '#/components/schemas/NickForm'}}}}
+      responses:
+        '200': {description: Action result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/message/deleteprocessthread:
+    post:
+      tags: [Messages]
+      summary: Delete message threads up to selected message IDs
+      x-eksi-risk: critical-destructive
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ThreadIdList]
+              properties:
+                ThreadIdList:
+                  type: array
+                  items:
+                    type: object
+                    required: [ThreadId, MaxMessageId]
+                    properties:
+                      ThreadId: {type: integer}
+                      MaxMessageId: {type: integer}
+      responses:
+        '200': {description: Delete result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/topic/savedraft:
+    post:
+      tags: [Drafts]
+      summary: Save or update an entry draft
+      x-eksi-risk: medium
+      requestBody: {required: true, content: {application/x-www-form-urlencoded: {schema: {$ref: '#/components/schemas/EntryForm'}}}}
+      responses:
+        '200': {description: Draft result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/topic/deletedraft:
+    post:
+      tags: [Drafts]
+      summary: Delete an entry draft by title
+      x-eksi-risk: high-destructive
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [Title]
+              properties: {Title: {type: string}}
+      responses:
+        '200': {description: Draft result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/settings/get/personal:
+    get:
+      tags: [Settings]
+      summary: Read personal account settings
+      x-eksi-risk: sensitive-read
+      responses:
+        '200': {description: Personal settings, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/settings/get/preferences:
+    get:
+      tags: [Settings]
+      summary: Read account preferences
+      x-eksi-risk: sensitive-read
+      responses:
+        '200': {description: Preferences, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/settings/set/preferences:
+    post:
+      tags: [Settings]
+      summary: Update account preferences
+      x-eksi-risk: high
+      requestBody: {required: true, content: {application/json: {schema: {type: object}}}}
+      responses:
+        '200': {description: Settings result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/trash:
+    get:
+      tags: [Trash]
+      summary: List deleted entries in the account trash
+      x-eksi-risk: sensitive-read
+      responses:
+        '200': {description: Trash contents, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/trash/delete:
+    post:
+      tags: [Trash]
+      summary: Permanently delete an item from trash
+      x-eksi-risk: critical-destructive
+      requestBody: {required: true, content: {application/x-www-form-urlencoded: {schema: {$ref: '#/components/schemas/IdForm'}}}}
+      responses:
+        '200': {description: Delete result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/trash/empty:
+    post:
+      tags: [Trash]
+      summary: Permanently empty account trash
+      x-eksi-risk: critical-destructive
+      responses:
+        '200': {description: Empty result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}
+
+  /v2/trash/resurrect:
+    post:
+      tags: [Trash]
+      summary: Restore an entry from trash
+      x-eksi-risk: high
+      requestBody: {required: true, content: {application/x-www-form-urlencoded: {schema: {$ref: '#/components/schemas/IdForm'}}}}
+      responses:
+        '200': {description: Restore result, content: {application/json: {schema: {$ref: '#/components/schemas/ApiResponse'}}}}

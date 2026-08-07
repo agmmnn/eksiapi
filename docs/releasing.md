@@ -33,8 +33,8 @@ No PyPI API token or GitHub Actions secret is required.
 5. Create and push an annotated tag matching the package version:
 
    ```bash
-   git tag -a v0.1.0 -m "eksiapi 0.1.0"
-   git push origin v0.1.0
+   git tag -a v1.1.0 -m "eksiapi 1.1.0"
+   git push origin v1.1.0
    ```
 
 6. Approve the `pypi` environment deployment. The workflow publishes to PyPI

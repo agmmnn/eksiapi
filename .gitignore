@@ -40,4 +40,6 @@ Thumbs.db
 *.env
 secrets.py
 
-other
+# Reverse-engineering inputs and local JADX output
+other/
+jadx-output/

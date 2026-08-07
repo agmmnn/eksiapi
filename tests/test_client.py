@@ -42,7 +42,7 @@ class FakeSession:
 
 
 def test_package_exposes_version() -> None:
-    assert __version__ == "0.1.0"
+    assert __version__ == "1.1.0"
 
 
 def test_client_sets_auth_and_timeout() -> None:
@@ -84,6 +84,16 @@ def test_client_maps_not_found_and_server_message() -> None:
     )
     with pytest.raises(EksiApiError, match="service unavailable"):
         client.me()
+
+    client = EksiClient(
+        session=FakeSession(
+            FakeResponse(
+                400, {"error": "invalid_grant", "error_description": "bad login"}
+            )
+        )
+    )
+    with pytest.raises(EksiApiError, match="bad login"):
+        client._post("/token", form_body={})
 
 
 def test_client_maps_network_and_response_shape_errors() -> None:

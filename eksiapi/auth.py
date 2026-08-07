@@ -1,8 +1,8 @@
 """
-Ekşi Sözlük Api-Secret generation — fully reversed from app v2.4.4
+Ekşi Sözlük Api-Secret generation — reversed from the Android application.
 
 Plaintext format (confirmed by Frida hook on Cipher.doFinal):
-  {randomHex}-{APP_UUID}-{len^2}-{adjustedTime}-{dayOff}-{hourOff}-{minOff}-eksisozluk-android/137-{clientSecret}
+  {randomHex}-{APP_UUID}-{len^2}-{adjustedTime}-{dayOff}-{hourOff}-{minOff}-eksisozluk-android/144-{clientSecret}
 
 Where:
   randomHex    = random lowercase hex, length in [40, 80]
@@ -39,7 +39,7 @@ _RSA_PUBKEY_B64 = (
 
 # ── App constants (from _.sf fields) ─────────────────────────────────────────
 APP_UUID = "c8ecd738-dc33-45a4-a977-ae8e2a51c644"  # _.sf.a
-APP_VERSION = "eksisozluk-android/137"  # _.sf build string
+APP_VERSION = "eksisozluk-android/144"
 HEX_MIN = 40
 HEX_MAX = 80
 DAY_MAX = 5000
@@ -51,13 +51,19 @@ _PUBLIC_KEY = serialization.load_der_public_key(
 )
 
 
-def generate_api_secret(server_time_ms: int, client_secret: str) -> str:
+def generate_api_secret(
+    server_time_ms: int,
+    client_secret: str,
+    *,
+    app_build: int = 144,
+) -> str:
     """
     Reproduces _.x60.g(_.qw.e(client_secret, _.Qy.k(server_time_ms))).
 
     Args:
         server_time_ms: timestamp from GET /v2/clientsettings/time  (Data field)
-        client_secret:  the Client-Secret UUID for this session
+        client_secret: the Client-Secret UUID for this session
+        app_build: Android build number used in the signed fingerprint
 
     Returns:
         Base64 Api-Secret string (no newlines)
@@ -82,11 +88,12 @@ def generate_api_secret(server_time_ms: int, client_secret: str) -> str:
     hex_len = random.randint(HEX_MIN, HEX_MAX)
     random_hex = pool[:hex_len]
 
+    app_version = f"eksisozluk-android/{app_build}"
     plaintext = (
         f"{random_hex}-{APP_UUID}-{hex_len * hex_len}"
         f"-{adjusted_ms}"
         f"-{day_off}-{hour_off}-{min_off}"
-        f"-{APP_VERSION}"
+        f"-{app_version}"
         f"-{client_secret}"
     )
 

@@ -1,0 +1,7 @@
+{
+  "favorite": {"method": "POST", "path": "/v2/entry/favorite", "body": {"Id": 123456789}},
+  "unfavorite": {"method": "POST", "path": "/v2/entry/unfavorite", "body": {"Id": 123456789}},
+  "vote": {"method": "POST", "path": "/v2/entry/vote", "body": {"Id": 123456789, "Rate": 1}},
+  "remove_vote": {"method": "POST", "path": "/v2/entry/vote/remove", "body": {"Id": 123456789}},
+  "response": {"Success": true, "Data": true}
+}

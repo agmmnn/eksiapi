@@ -41,6 +41,19 @@ def _timeout_from_environment() -> float:
     return timeout
 
 
+def _expires_in_from_environment() -> float | None:
+    raw = os.environ.get("EKSI_EXPIRES_IN")
+    if raw is None:
+        return None
+    try:
+        expires_in = float(raw)
+    except ValueError as exc:
+        raise CredentialError("EKSI_EXPIRES_IN must be a number") from exc
+    if expires_in < 0:
+        raise CredentialError("EKSI_EXPIRES_IN cannot be negative")
+    return expires_in
+
+
 def save_credentials(username: str, password: str) -> None:
     payload = json.dumps(
         {"version": 1, "username": username, "password": password},
@@ -119,6 +132,9 @@ def create_authenticated_client() -> EksiClient:
         return EksiClient(
             access_token=access_token,
             client_secret=client_secret,
+            refresh_token=os.environ.get("EKSI_REFRESH_TOKEN"),
+            expires_in=_expires_in_from_environment(),
+            client_unique_id=os.environ.get("EKSI_CLIENT_UNIQUE_ID"),
             timeout=timeout,
         )
 

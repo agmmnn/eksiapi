@@ -1,0 +1,9 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v2/message/sendmessage",
+    "content_type": "application/json",
+    "body": {"message": "örnek mesaj", "to": "örnek", "threadId": 0}
+  },
+  "response": {"Success": true, "Data": {"MessageId": 987654}}
+}
