@@ -82,6 +82,7 @@ class AsyncEksiClient:
         self.last_rate_limit = RateLimitInfo()
         self.last_request_id: str | None = None
         self.token_info: TokenInfo | None = None
+        self.auth_mode: Literal["none", "anonymous", "account"] = "none"
         if access_token and client_secret:
             expires_at = time.time() + expires_in if expires_in is not None else None
             self._set_auth(
@@ -93,7 +94,10 @@ class AsyncEksiClient:
 
     @classmethod
     def anonymous(cls, **kwargs: Any) -> AsyncEksiClient:
-        return cls(**kwargs)
+        """Create a client that obtains an anonymous bearer on its first read."""
+        client = cls(**kwargs)
+        client.auth_mode = "anonymous"
+        return client
 
     def _set_auth(
         self,
@@ -102,6 +106,7 @@ class AsyncEksiClient:
         *,
         refresh_token: str | None = None,
         expires_at: float | None = None,
+        mode: Literal["anonymous", "account"] = "account",
     ) -> None:
         self.session.headers.update(
             {"Authorization": f"Bearer {access_token}", "Client-Secret": client_secret}
@@ -109,6 +114,7 @@ class AsyncEksiClient:
         self.token_info = TokenInfo(
             access_token, client_secret, refresh_token, expires_at
         )
+        self.auth_mode = mode
 
     def _auth_form(self, server_time: int, client_secret: str) -> dict[str, Any]:
         fp = self.fingerprint
@@ -138,19 +144,49 @@ class AsyncEksiClient:
                 "Ekşi API returned an invalid server time"
             ) from exc
 
+    async def authenticate_anonymous(self) -> dict[str, Any]:
+        """Obtain an anonymous app token without Ekşi account credentials."""
+        client_secret = str(uuid.uuid4())
+        self.session.headers.pop("Authorization", None)
+        body = self._auth_form(
+            await self._get_server_time(allow_refresh=False), client_secret
+        )
+        body["ClientUniqueId"] = self.client_unique_id
+        self.session.headers.update({"Client-Secret": client_secret})
+        payload = await self._request(
+            "POST",
+            "/v2/account/anonymoustoken",
+            data=body,
+            force_raw=True,
+            allow_refresh=False,
+        )
+        data = payload.get("Data") if isinstance(payload.get("Data"), Mapping) else {}
+        access_token = data.get("access_token") or data.get("AccessToken")
+        if not access_token:
+            raise EksiAuthenticationError(
+                "Ekşi anonymous token response did not contain an access token"
+            )
+        expires_in = data.get("expires_in")
+        if expires_in is None:
+            expires_in = data.get("ExpiresIn")
+        try:
+            expires_at = (
+                time.time() + float(expires_in) if expires_in is not None else None
+            )
+        except (TypeError, ValueError):
+            expires_at = None
+        self._set_auth(
+            str(access_token),
+            client_secret,
+            expires_at=expires_at,
+            mode="anonymous",
+        )
+        return payload
+
     async def login(self, username: str, password: str) -> dict[str, Any]:
         username = _required_text(username, "username", maximum=100)
         password = _required_text(password, "password", maximum=500)
-        anon_secret = str(uuid.uuid4())
-        self.session.headers.update({"Client-Secret": anon_secret})
-        anon_body = self._auth_form(await self._get_server_time(), anon_secret)
-        anon_body["ClientUniqueId"] = self.client_unique_id
-        anon = await self._request(
-            "POST", "/v2/account/anonymoustoken", data=anon_body, force_raw=True
-        )
-        anon_token = anon.get("Data", {}).get("AccessToken", "")
-        if anon_token:
-            self.session.headers.update({"Authorization": f"Bearer {anon_token}"})
+        await self.authenticate_anonymous()
         login_secret = str(uuid.uuid4())
         body = self._auth_form(await self._get_server_time(), login_secret)
         body.update(
@@ -183,6 +219,7 @@ class AsyncEksiClient:
             client_secret,
             refresh_token=str(refresh) if refresh else None,
             expires_at=expires_at,
+            mode="account",
         )
 
     async def refresh_access_token(self) -> dict[str, Any]:
@@ -213,14 +250,24 @@ class AsyncEksiClient:
         allow_refresh: bool = True,
         **kwargs: Any,
     ) -> Any:
+        authentication_path = path in {"/token", "/v2/account/anonymoustoken"}
         if (
             allow_refresh
-            and path != "/token"
+            and not authentication_path
+            and self.auth_mode == "anonymous"
+            and self.token_info is None
+        ):
+            await self.authenticate_anonymous()
+        if (
+            allow_refresh
+            and not authentication_path
             and self.token_info is not None
             and self.token_info.expired
-            and self.token_info.refresh_token
         ):
-            await self.refresh_access_token()
+            if self.token_info.refresh_token:
+                await self.refresh_access_token()
+            elif self.auth_mode == "anonymous":
+                await self.authenticate_anonymous()
         response = await self.transport.request(
             method, f"{self.base_url}{path}", retryable=retryable, **kwargs
         )
@@ -229,12 +276,18 @@ class AsyncEksiClient:
             and allow_refresh
             and retryable
             and self.token_info is not None
-            and self.token_info.refresh_token
         ):
-            await self.refresh_access_token()
-            response = await self.transport.request(
-                method, f"{self.base_url}{path}", retryable=retryable, **kwargs
-            )
+            renewed = False
+            if self.token_info.refresh_token:
+                await self.refresh_access_token()
+                renewed = True
+            elif self.auth_mode == "anonymous":
+                await self.authenticate_anonymous()
+                renewed = True
+            if renewed:
+                response = await self.transport.request(
+                    method, f"{self.base_url}{path}", retryable=retryable, **kwargs
+                )
         payload, self.last_rate_limit, self.last_request_id = decode_response(response)
         return payload if force_raw or self.raw_response else unwrap_response(payload)
 
@@ -450,6 +503,10 @@ class AsyncEksiClient:
         preview = WritePreview(operation, target, dict(fields), destructive, idempotent)
         if dry_run:
             return preview
+        if self.auth_mode == "anonymous":
+            raise EksiAuthenticationError(
+                f"{operation} requires an authenticated Ekşi account"
+            )
         try:
             payload = await self._post(path, json_body=json_body, form_body=form_body)
             envelope = (

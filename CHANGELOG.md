@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-08-07
+
+### Added
+
+- Automatic anonymous bearer-token bootstrap and renewal for sync and async
+  clients, enabling credential-free public reads and MCP research.
+
+### Changed
+
+- `EksiClient.anonymous()` now obtains a usable token immediately; the async
+  counterpart obtains it lazily on its first read without changing its API.
+- Account mutations now fail locally with a clear authentication error when an
+  anonymous client is used.
+
 ## [1.1.0] - 2026-08-07
 
 ### Added
@@ -41,6 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Trusted Publishing workflows for TestPyPI and PyPI, artifact attestations, and
   GitHub Releases.
 
-[Unreleased]: https://github.com/agmmnn/eksiapi/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/agmmnn/eksiapi/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/agmmnn/eksiapi/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/agmmnn/eksiapi/compare/v0.1.0...v1.1.0
 [0.1.0]: https://github.com/agmmnn/eksiapi/releases/tag/v0.1.0

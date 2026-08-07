@@ -209,6 +209,29 @@ def test_missing_credentials_are_rejected(monkeypatch) -> None:
         credentials.create_authenticated_client()
 
 
+def test_default_client_uses_anonymous_mode_without_credentials(monkeypatch) -> None:
+    sentinel = object()
+    calls = []
+    monkeypatch.setattr(credentials, "credential_source", lambda: None)
+    monkeypatch.setattr(credentials, "_timeout_from_environment", lambda: 12.5)
+    monkeypatch.setattr(
+        credentials.EksiClient,
+        "anonymous",
+        classmethod(lambda cls, **kwargs: calls.append(kwargs) or sentinel),
+    )
+
+    assert credentials.create_default_client() is sentinel
+    assert calls == [{"timeout": 12.5}]
+
+
+def test_default_client_prefers_configured_account(monkeypatch) -> None:
+    sentinel = object()
+    monkeypatch.setattr(credentials, "credential_source", lambda: "OS keychain")
+    monkeypatch.setattr(credentials, "create_authenticated_client", lambda: sentinel)
+
+    assert credentials.create_default_client() is sentinel
+
+
 def test_auth_command_status_logout_and_login(monkeypatch, capsys) -> None:
     monkeypatch.setattr(credentials, "credential_source", lambda: "OS keychain")
     assert credentials.main(["status"]) == 0
