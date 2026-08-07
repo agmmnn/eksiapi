@@ -1,12 +1,7 @@
-<p align="center">
-    <img src="./assets/eksiapi-logo.png" width="132" alt="eksiapi logo">
-</p>
-
-<h1 align="center">eksiapi</h1>
+<h1 align="center"><img src="./assets/eksiapi-logo.png" width="52" alt="eksiapi logo"> <br /> eksiapi</h1>
 
 <p align="center">
-  <strong>Unofficial Python API client and MCP server for Ekşi Sözlük.</strong><br>
-  Supports anonymous public reads and authenticated account actions.
+  Unofficial sync and async <strong>Python SDK</strong> and <strong>MCP server</strong> for <a href="https://eksisozluk.com">Ekşi Sözlük</a>, supporting anonymous research and authenticated account actions across topics, entries, profiles, comments and feeds.
 </p>
 
 <p align="center">
@@ -14,7 +9,6 @@
   <a href="https://pypi.org/project/eksiapi/"><img alt="Python requirement" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fpypi.org%2Fpypi%2Feksiapi%2Fjson&amp;query=%24.info.requires_python&amp;style=flat-square&amp;logo=python&amp;logoColor=white&amp;label=Python&amp;color=3776AB"></a>
   <a href="./docs/mcp.md"><img alt="MCP stdio server" src="https://img.shields.io/badge/MCP-stdio-7C3AED?style=flat-square"></a>
   <a href="https://github.com/agmmnn/eksiapi/actions/workflows/ci.yml"><img alt="Tests" src="https://img.shields.io/github/actions/workflow/status/agmmnn/eksiapi/ci.yml?branch=master&amp;style=flat-square&amp;logo=github&amp;logoColor=white&amp;label=tests"></a>
-  <a href="./LICENSE"><img alt="License" src="https://img.shields.io/github/license/agmmnn/eksiapi?style=flat-square&amp;label=license&amp;color=6E7781"></a>
 </p>
 
 <p align="center">
@@ -24,8 +18,6 @@
   <a href="#reverse-engineering">Reverse engineering</a> ·
   <a href="#documentation">Documentation</a>
 </p>
-
-`eksiapi` provides structured access to topics, entries, profiles, comments and feeds. It includes matching synchronous and asynchronous Python clients plus a local stdio MCP server for AI applications.
 
 ## Quick start
 
