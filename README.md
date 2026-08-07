@@ -54,7 +54,36 @@ print(api.entry(1))
 
 ## Usage
 
-### Authentication
+### Anonymous vs. logged-in clients
+
+Ekşi's content endpoints still require a bearer token, but that token does not
+have to belong to a user account. The library supports both modes:
+
+| Mode | Credentials | Available operations |
+|---|---|---|
+| Anonymous | None; the SDK obtains an RSA-authenticated anonymous app token | Public topics, entries, profiles, channels and feeds |
+| Logged in | Username/password or an existing account token | Anonymous reads plus favorites, votes, follows, messages, drafts, settings and other account actions |
+
+`auth_mode` is `"none"`, `"anonymous"`, or `"account"`, so applications can
+inspect the active mode without reading token values. A plain `EksiClient()`
+starts in `"none"` mode and cannot read protected content until you call
+`login()` or `authenticate_anonymous()`; use `EksiClient.anonymous()` for the
+credential-free public-read flow.
+
+Anonymous sync usage:
+
+```python
+with EksiClient.anonymous() as api:
+    print(api.today())
+    print(api.entry(123))
+    print(api.user("agmmnn"))
+```
+
+`EksiClient.anonymous()` obtains and installs the anonymous bearer automatically.
+It is renewed automatically when it expires or a safe read receives HTTP 401.
+Account mutations attempted in anonymous mode raise `EksiAuthenticationError`.
+
+Logged-in usage:
 
 ```python
 api = EksiClient()
@@ -78,13 +107,6 @@ Requests use a 30-second timeout by default. Override it when needed:
 api = EksiClient(timeout=15)
 ```
 
-Public endpoints can be used without account credentials:
-
-```python
-with EksiClient.anonymous() as api:
-    print(api.search_topics("python"))
-```
-
 Set `raw_response=False` to unwrap the API's `Data` envelope. For typed views,
 use helpers such as `entry_typed()`, `me_typed()`, and `page()`; existing methods
 continue to return dictionaries by default.
@@ -99,6 +121,15 @@ async with AsyncEksiClient() as api:
     entry = await api.entry_typed(123)
     async for item in api.iter_topic_entries("python", max_pages=3):
         print(item)
+```
+
+For anonymous async usage, the token is obtained lazily on the first read:
+
+```python
+api = AsyncEksiClient.anonymous()
+async with api:
+    print(await api.today())
+    print(await api.entry(123))
 ```
 
 Both clients expose proxy/TLS configuration, the current Android fingerprint,
@@ -214,9 +245,11 @@ OpenAPI file into Postman or Insomnia for interactive exploration.
 
 ## MCP server
 
-`eksi-mcp` starts in local, read-only mode for researching Ekşi Sözlük and
-viewing the authenticated account. Credentials are never exposed as tool
-arguments or tool results.
+`eksi-mcp` starts in local, read-only mode for researching Ekşi Sözlük. When no
+credentials are configured it automatically uses an anonymous token. Supplying
+account credentials additionally enables account-specific reads; interactive
+writes always require a logged-in account. Credentials are never exposed as
+tool arguments or tool results.
 
 Install the MCP extra as an isolated CLI tool:
 
@@ -232,10 +265,11 @@ pip install "eksiapi[mcp]"
 uv add "eksiapi[mcp]"
 ```
 
-### Configure credentials
+### Configure credentials (optional for public research)
 
-The recommended setup verifies the login and saves it in the operating system
-keychain:
+No setup is required for anonymous, read-only research. For account-specific
+reads or interactive writes, the recommended setup verifies the login and saves
+it in the operating system keychain:
 
 ```bash
 eksi-auth login

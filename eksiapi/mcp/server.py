@@ -21,7 +21,7 @@ from eksiapi import __version__
 from eksiapi.client import EksiClient
 from eksiapi.errors import EksiApiError
 from eksiapi.formatting import unwrap_response
-from eksiapi.mcp.credentials import CredentialError, create_authenticated_client
+from eksiapi.mcp.credentials import CredentialError, create_default_client
 from eksiapi.mcp.policy import PreviewStore, ServerMode
 from eksiapi.models import WritePreview
 
@@ -111,7 +111,7 @@ class EksiService:
 
     def __init__(
         self,
-        client_factory: Callable[[], EksiClient] = create_authenticated_client,
+        client_factory: Callable[[], EksiClient] = create_default_client,
         *,
         min_interval: float = 0.35,
     ) -> None:
@@ -162,7 +162,7 @@ def _clean(value: str, label: str) -> str:
 
 
 def create_server(
-    client_factory: Callable[[], EksiClient] = create_authenticated_client,
+    client_factory: Callable[[], EksiClient] = create_default_client,
     *,
     min_interval: float | None = None,
     mode: ServerMode = "readonly",

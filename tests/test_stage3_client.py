@@ -10,6 +10,7 @@ from eksiapi import (
     AsyncEksiClient,
     AsyncMockSession,
     EksiApiError,
+    EksiAuthenticationError,
     EksiClient,
     MockResponse,
     MockSession,
@@ -154,6 +155,48 @@ def test_async_client_uses_shared_behavior() -> None:
         preview = await client.favorite_entry(7, dry_run=True)
         assert isinstance(preview, WritePreview)
         assert (await client.favorite_entry(7)).success is True
+        await client.close()
+        assert session.closed is True
+
+    asyncio.run(run())
+
+
+def test_async_anonymous_client_bootstraps_renews_and_blocks_writes() -> None:
+    async def run() -> None:
+        session = AsyncMockSession(
+            [
+                MockResponse(200, {"Data": 1_900_000_000_000}),
+                MockResponse(
+                    200,
+                    {
+                        "Data": {
+                            "access_token": "first-token",
+                            "expires_in": 3600,
+                        }
+                    },
+                ),
+                MockResponse(401, {}),
+                MockResponse(200, {"Data": 1_900_000_000_100}),
+                MockResponse(
+                    200,
+                    {
+                        "Data": {
+                            "access_token": "second-token",
+                            "expires_in": 3600,
+                        }
+                    },
+                ),
+                MockResponse(200, {"Data": {"EntryId": 9}}),
+            ]
+        )
+        client = AsyncEksiClient.anonymous(session=session)
+
+        assert client.auth_mode == "anonymous"
+        assert session.calls == []
+        assert (await client.entry(9))["Data"]["EntryId"] == 9
+        assert session.headers["Authorization"] == "Bearer second-token"
+        with pytest.raises(EksiAuthenticationError, match="authenticated Ekşi account"):
+            await client.favorite_entry(9)
         await client.close()
         assert session.closed is True
 

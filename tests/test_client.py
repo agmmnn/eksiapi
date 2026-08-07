@@ -42,7 +42,7 @@ class FakeSession:
 
 
 def test_package_exposes_version() -> None:
-    assert __version__ == "1.1.0"
+    assert __version__ == "1.2.0"
 
 
 def test_client_sets_auth_and_timeout() -> None:
@@ -58,6 +58,93 @@ def test_client_sets_auth_and_timeout() -> None:
     assert session.headers["Authorization"] == "Bearer token"
     assert session.headers["Client-Secret"] == "secret"
     assert session.calls[0][2]["timeout"] == 12
+    assert client.auth_mode == "account"
+
+
+def test_anonymous_client_bootstraps_token_and_allows_public_reads() -> None:
+    session = FakeSession(
+        FakeResponse(200, {"Data": 1_900_000_000_000}),
+        FakeResponse(
+            200,
+            {"Data": {"access_token": "anonymous-token", "expires_in": "3600"}},
+        ),
+        FakeResponse(200, {"Data": {"EntryId": 42}}),
+    )
+
+    client = EksiClient.anonymous(session=session)
+
+    assert client.auth_mode == "anonymous"
+    assert client.token_info is not None
+    assert client.token_info.access_token == "anonymous-token"
+    assert client.token_info.expires_at is not None
+    assert session.headers["Authorization"] == "Bearer anonymous-token"
+    assert session.calls[1][1].endswith("/v2/account/anonymoustoken")
+    assert client.entry(42)["Data"]["EntryId"] == 42
+
+
+def test_anonymous_client_closes_when_bootstrap_response_has_no_token() -> None:
+    session = FakeSession(
+        FakeResponse(200, {"Data": 1_900_000_000_000}),
+        FakeResponse(200, {"Data": {}}),
+    )
+
+    with pytest.raises(EksiAuthenticationError, match="access token"):
+        EksiClient.anonymous(session=session)
+
+    assert session.closed is True
+
+
+def test_anonymous_client_renews_expired_token_before_a_read() -> None:
+    session = FakeSession(
+        FakeResponse(200, {"Data": 1_900_000_000_000}),
+        FakeResponse(200, {"Data": {"access_token": "expired-token", "expires_in": 0}}),
+        FakeResponse(200, {"Data": 1_900_000_000_100}),
+        FakeResponse(
+            200, {"Data": {"access_token": "fresh-token", "expires_in": 3600}}
+        ),
+        FakeResponse(200, {"Data": {"EntryId": 7}}),
+    )
+    client = EksiClient.anonymous(session=session)
+
+    assert client.entry(7)["Data"]["EntryId"] == 7
+    assert session.headers["Authorization"] == "Bearer fresh-token"
+    assert (
+        sum(call[1].endswith("/v2/account/anonymoustoken") for call in session.calls)
+        == 2
+    )
+
+
+def test_anonymous_client_renews_after_a_safe_read_returns_401() -> None:
+    session = FakeSession(
+        FakeResponse(200, {"Data": 1_900_000_000_000}),
+        FakeResponse(
+            200, {"Data": {"access_token": "first-token", "expires_in": 3600}}
+        ),
+        FakeResponse(401, {}),
+        FakeResponse(200, {"Data": 1_900_000_000_100}),
+        FakeResponse(
+            200, {"Data": {"access_token": "second-token", "expires_in": 3600}}
+        ),
+        FakeResponse(200, {"Data": {"EntryId": 8}}),
+    )
+    client = EksiClient.anonymous(session=session)
+
+    assert client.entry(8)["Data"]["EntryId"] == 8
+    assert session.headers["Authorization"] == "Bearer second-token"
+
+
+def test_anonymous_client_rejects_account_mutations_but_keeps_dry_run() -> None:
+    session = FakeSession(
+        FakeResponse(200, {"Data": 1_900_000_000_000}),
+        FakeResponse(200, {"Data": {"access_token": "anonymous-token"}}),
+    )
+    client = EksiClient.anonymous(session=session)
+
+    assert client.favorite_entry(42, dry_run=True).operation == "favorite_entry"
+    with pytest.raises(EksiAuthenticationError, match="authenticated Ekşi account"):
+        client.favorite_entry(42)
+
+    assert len(session.calls) == 2
 
 
 @pytest.mark.parametrize(
@@ -129,6 +216,7 @@ def test_login_flow_replaces_anonymous_auth() -> None:
     assert session.headers["Authorization"] == "Bearer account-token"
     assert session.headers["Client-Secret"]
     assert session.calls[-1][2]["data"]["password"] == "password"
+    assert client.auth_mode == "account"
 
 
 def test_login_rejects_missing_access_token_and_bad_server_time() -> None:

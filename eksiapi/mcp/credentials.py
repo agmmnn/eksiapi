@@ -162,6 +162,13 @@ def create_authenticated_client() -> EksiClient:
     return client
 
 
+def create_default_client() -> EksiClient:
+    """Use configured account credentials, otherwise fall back to anonymous reads."""
+    if credential_source() is None:
+        return EksiClient.anonymous(timeout=_timeout_from_environment())
+    return create_authenticated_client()
+
+
 def _login(username: str | None) -> int:
     username = username or input("Ekşi username/email: ").strip()
     if not username:
